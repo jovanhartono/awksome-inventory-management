@@ -3,9 +3,57 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
 }
+
+model Order {
+  id          Int       @id @default(autoincrement())
+  detail OrderDetails[]
+  createdAt DateTime @default(now())
+}
+
+model OrderDetails {
+  id          Int       @id @default(autoincrement())
+  orderId Int
+  order Order @relation(fields: [orderId], references: [id])
+  productId Int
+  product Product @relation(fields: [productId], references: [id])
+  qty Int
+
+  @@index([orderId, productId])
+}
+
+model Product {
+    id          Int       @id @default(autoincrement())
+    name        String
+    description String
+    
+    productDetail ProductDetail[]
+    OrderDetails OrderDetails[]
+}
+
+model ProductDetail {
+    id Int @id @default(autoincrement())
+    productId   Int
+    price Decimal
+    qty Int
+    variantId Int
+    variant Variant @relation(fields: [variantId], references: [id])
+
+    product Product @relation(fields: [productId], references: [id])
+    @@index([productId, variantId])
+}
+
+model Variant {
+  id Int @id @default(autoincrement())
+  name String
+  
+  model ProductDetail[]
+}
+
