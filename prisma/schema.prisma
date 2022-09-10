@@ -22,20 +22,18 @@ model OrderDetails {
   id          Int       @id @default(autoincrement())
   orderId Int
   order Order @relation(fields: [orderId], references: [id])
-  productId Int
-  product Product @relation(fields: [productId], references: [id])
+  productDetailsId Int
+  productDetails ProductDetail @relation(fields: [productDetailsId], references: [id])
   qty Int
 
-  @@index([orderId, productId])
+  @@index([orderId, productDetailsId])
 }
 
 model Product {
     id          Int       @id @default(autoincrement())
     name        String
-    description String
     
     productDetail ProductDetail[]
-    OrderDetails OrderDetails[]
 }
 
 model ProductDetail {
@@ -44,8 +42,9 @@ model ProductDetail {
     price Decimal
     qty Int
     variantId Int
-    variant Variant @relation(fields: [variantId], references: [id])
+    orderDetail OrderDetails[]
 
+    variant Variant @relation(fields: [variantId], references: [id])
     product Product @relation(fields: [productId], references: [id])
     @@index([productId, variantId])
 }
@@ -53,7 +52,6 @@ model ProductDetail {
 model Variant {
   id Int @id @default(autoincrement())
   name String
-  
   model ProductDetail[]
 }
 
