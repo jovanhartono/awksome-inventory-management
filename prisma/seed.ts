@@ -21,20 +21,17 @@ async function main() {
     await prisma.variant.deleteMany();
     console.log('Succesfully deleted variant');
 
-    // await prisma.$queryRaw`ALTER TABLE OrderDetails AUTO_INCREMENT = 1`
-    // console.log('reset order detail auto increment to 1')
+    await prisma.$queryRaw`ALTER TABLE OrderDetails AUTO_INCREMENT = 1`
+    console.log('reset order detail auto increment to 1')
 
-    // await prisma.$queryRaw`ALTER TABLE ProductDetail AUTO_INCREMENT = 1`
-    // console.log('reset product detail auto increment to 1')
+    await prisma.$queryRaw`ALTER TABLE ProductDetail AUTO_INCREMENT = 1`
+    console.log('reset product detail auto increment to 1')
 
-    // await prisma.$queryRaw`ALTER TABLE Product AUTO_INCREMENT = 1`
-    // console.log('reset product auto increment to 1')
+    await prisma.$queryRaw`ALTER TABLE Product AUTO_INCREMENT = 1`
+    console.log('reset product auto increment to 1')
 
-    // await prisma.$queryRaw`ALTER TABLE Variant AUTO_INCREMENT = 1`
-    // console.log('reset variant auto increment to 1')
-
-    await prisma.$queryRaw`ALTER TABLE Order AUTO_INCREMENT = 1`
-    console.log('reset order auto increment to 1')
+    await prisma.$queryRaw`ALTER TABLE Variant AUTO_INCREMENT = 1`
+    console.log('reset variant auto increment to 1')
 
     console.log(`Start seeding ...`)
     for (const data of variants) {
