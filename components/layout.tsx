@@ -1,9 +1,10 @@
 import Header from "./header";
 import Footer from "./footer";
+import {ReactNode} from "react";
 
-export default function Layout({children}: { children: React.ReactNode }) {
+export default function Layout({children}: { children: ReactNode }) {
     return (
-        <div className="">
+        <div className={'min-h-screen'}>
             <Header/>
             <div>
                 {children}
