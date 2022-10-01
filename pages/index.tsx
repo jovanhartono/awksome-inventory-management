@@ -8,8 +8,8 @@ const Home: NextPage = () => {
         <Head>
             <title>Hello Awksome</title>
         </Head>
-        <main>
-            <h1 className="text-teal-500">awksome!</h1>
+        <main className={'p-6'}>
+            <p>masih lom jadi :(</p>
         </main>
     </>
   )
