@@ -4,7 +4,8 @@ import dayjs from "dayjs";
 import Dropdown from "../components/dropdown";
 import {ChangeEvent, FormEvent, Fragment, useState} from "react";
 import {PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
-import axios from "../lib/axios";
+import {prisma} from "../prisma/config";
+import {Product} from "../types/dto";
 
 export type ProductDetail = {
     productId: string,
@@ -13,7 +14,7 @@ export type ProductDetail = {
 }
 
 type OrderProps = {
-    products: Array<{ id: string, name: string }>,
+    products: Array<Product>,
     variants: Array<{ id: string, name: string }>
 }
 
@@ -177,15 +178,19 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-    const products = await axios.get('/product');
-    const variants = await axios.get('/variant');
+    const products = await prisma.product.findMany();
+    const variants = await prisma.variant.findMany();
+
+    const mappedProducts: Array<Product> = products.map(({id, name, updatedAt}) => {
+        return {id: id.toString(), name, updatedAt: updatedAt.toString()};
+    })
 
     return {
         props: {
-            products: products.data,
-            variants: variants.data
+            products: mappedProducts,
+            variants
         }
     }
 }
 
-export default Order
+export default Order;

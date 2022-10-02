@@ -33,7 +33,8 @@ model OrderDetails {
 model Product {
     id          Int       @id @default(autoincrement())
     name        String
-    
+    updatedAt DateTime @updatedAt
+
     productDetail ProductDetail[]
 }
 
