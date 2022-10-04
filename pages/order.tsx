@@ -5,22 +5,22 @@ import Dropdown from "../components/dropdown";
 import {ChangeEvent, FormEvent, Fragment, useState} from "react";
 import {PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
 import {prisma} from "../prisma/config";
-import {Product} from "../types/dto";
+import {SerializedProduct} from "../types/prisma.types";
 
-export type ProductDetail = {
+type ProductDetail = {
     productId: string,
     variantId: string,
     qty: string
 }
 
 type OrderProps = {
-    products: Array<Product>,
+    products: Array<SerializedProduct>,
     variants: Array<{ id: string, name: string }>
 }
 
 const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
     const baseProduct: ProductDetail = {
-        productId: products[0].id,
+        productId: products[0].id.toString(),
         qty: '1',
         variantId: variants[0].id
     }
@@ -29,10 +29,10 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
     const [orderDate, setOrderDate] = useState<number>(dayjs().unix() * 1000);
     const [productDetails, setProductDetails] = useState<ProductDetail[]>([{...baseProduct}]);
 
-    const handleProductDetails = (value: string, index: number, key: keyof ProductDetail) => {
+    const handleProductDetails = (value: string | number, index: number, key: keyof ProductDetail) => {
         setProductDetails((currentValue: ProductDetail[]) => {
             const newValue = currentValue;
-            newValue[index][key] = value;
+            newValue[index][key] = typeof value === 'number' ? value.toString() : value;
             return [...newValue];
         });
     }
@@ -81,7 +81,7 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                                                                 <div
                                                                     className="flex items-center border border-gray-400 hover:text-gray-700 hover:border-gray-700 basic-transition rounded py-1 px-2 text-gray-500 font-light text-sm"
                                                                     onClick={() => {
-                                                                        setProductDetails((currentValue) => {
+                                                                        setProductDetails((currentValue: ProductDetail[]) => {
                                                                             const newValue = [...currentValue, {...baseProduct}]
                                                                             return [...newValue];
                                                                         })
@@ -106,10 +106,10 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                                                 </div>
                                                 <Dropdown
                                                     value={productDetails[index].productId}
-                                                    options={products.map((product) => {
+                                                    options={products.map((product: SerializedProduct) => {
                                                         return {
                                                             label: product.name,
-                                                            value: product.id
+                                                            value: product.id.toString()
                                                         }
                                                     })}
                                                     changeHandler={({value}) => {
@@ -181,9 +181,7 @@ export const getStaticProps: GetStaticProps = async () => {
     const products = await prisma.product.findMany();
     const variants = await prisma.variant.findMany();
 
-    const mappedProducts: Array<Product> = products.map(({id, name, updatedAt}) => {
-        return {id: id.toString(), name, updatedAt: updatedAt.toString()};
-    })
+    const mappedProducts: Array<SerializedProduct> = products.map(({id, name}) => ({id, name}))
 
     return {
         props: {
