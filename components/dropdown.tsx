@@ -8,28 +8,25 @@ type DropdownPayload = {
 }
 
 type DropdownProps = {
-    value: string,
+    value?: string,
     changeHandler?: (event: DropdownPayload) => void,
     options: DropdownPayload[]
 }
 
 const Dropdown = ({value, options, changeHandler}: DropdownProps) => {
-    const [selected, setSelected] = useState<DropdownPayload>();
+    const [selected, setSelected] = useState<DropdownPayload>(options.find(x => x.value === value) ?? options[0]);
 
     useEffect(() => {
-        setSelected(options.find(x => x.value === value) ?? {value: '', label: ''});
-    }, [value]);
+        changeHandler && changeHandler(selected);
+    }, [selected])
 
     return (
         <div className={'w-full'}>
-            <Listbox value={selected} onChange={(newValue: DropdownPayload) => {
-                setSelected(newValue);
-                changeHandler && changeHandler(newValue);
-            }}>
+            <Listbox value={selected} onChange={setSelected} by={"value"}>
                 <div className="relative">
                     <Listbox.Button
                         className="w-full text-left p-2 border border-gray-300 rounded font-normal text-sm xl:text-base focus:border-amber-700 focus:outline-none">
-                        <span className="block truncate">{selected?.label}</span>
+                        <span className="block truncate">{selected?.label ?? 'Select Value'}</span>
                         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true"/>
                         </span>
@@ -55,6 +52,7 @@ const Dropdown = ({value, options, changeHandler}: DropdownProps) => {
                                                 className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                                 {data.label}
                                             </span>
+                                            <p>{selected}</p>
                                             {selected &&
                                                 (
                                                     <span

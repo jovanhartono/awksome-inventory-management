@@ -2,12 +2,15 @@ import {GetStaticProps, NextPage} from "next";
 import Head from "next/head";
 import dayjs from "dayjs";
 import Dropdown from "../components/dropdown";
-import {ChangeEvent, FormEvent, Fragment, useState} from "react";
+import {ChangeEvent, FormEvent, Fragment, useEffect, useState} from "react";
 import {PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
 import {prisma} from "../prisma/config";
 import {SerializedProduct} from "../types/prisma.types";
+import {Product, Variant} from "@prisma/client";
+import {nanoid} from "nanoid";
 
 type ProductDetail = {
+    key?: string,
     productId: string,
     variantId: string,
     qty: string
@@ -15,24 +18,29 @@ type ProductDetail = {
 
 type OrderProps = {
     products: Array<SerializedProduct>,
-    variants: Array<{ id: string, name: string }>
+    variants: Array<Variant>
 }
+
 
 const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
     const baseProduct: ProductDetail = {
         productId: products[0].id.toString(),
         qty: '1',
-        variantId: variants[0].id
+        variantId: variants[0].id.toString()
     }
-
     // dayjs unix value is floored into the nearest second. so we need to multiply into milliseconds.
     const [orderDate, setOrderDate] = useState<number>(dayjs().unix() * 1000);
-    const [productDetails, setProductDetails] = useState<ProductDetail[]>([{...baseProduct}]);
+    const [productDetails, setProductDetails] = useState<ProductDetail[]>([]);
 
-    const handleProductDetails = (value: string | number, index: number, key: keyof ProductDetail) => {
+    useEffect(() => {
+        setProductDetails([{...baseProduct, key: nanoid(10)}]);
+    }, []);
+
+
+    const handleProductDetails = (value: string, index: number, key: keyof ProductDetail) => {
         setProductDetails((currentValue: ProductDetail[]) => {
             const newValue = currentValue;
-            newValue[index][key] = typeof value === 'number' ? value.toString() : value;
+            newValue[index][key] = value;
             return [...newValue];
         });
     }
@@ -47,7 +55,7 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
             <Head>
                 <title>Order Page</title>
             </Head>
-            <main className={''}>
+            <main>
                 <section className="p-6">
                     <div className="flex justify-between items-center">
                         <h2>Add Order</h2>
@@ -61,7 +69,6 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                                 <label htmlFor={'order-date'}>Date</label>
                                 <input id={'order-date'}
                                        type="date"
-                                       className="input-form"
                                        value={dayjs(orderDate).format('YYYY-MM-DD')}
                                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
                                            setOrderDate(dayjs(event.target.value).unix() * 1000)
@@ -71,7 +78,7 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                             {
                                 productDetails.map((productDetail: ProductDetail, index: number) => {
                                     return (
-                                        <Fragment key={index}>
+                                        <Fragment key={productDetail.key}>
                                             <div className="space-y-3">
                                                 <div className="flex justify-between items-center">
                                                     <label className="mb-0">Products</label>
@@ -82,7 +89,10 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                                                                     className="flex items-center border border-gray-400 hover:text-gray-700 hover:border-gray-700 basic-transition rounded py-1 px-2 text-gray-500 font-light text-sm"
                                                                     onClick={() => {
                                                                         setProductDetails((currentValue: ProductDetail[]) => {
-                                                                            const newValue = [...currentValue, {...baseProduct}]
+                                                                            const newValue = [...currentValue, {
+                                                                                ...baseProduct,
+                                                                                key: nanoid(10)
+                                                                            }]
                                                                             return [...newValue];
                                                                         })
                                                                     }}
@@ -121,11 +131,10 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                                                 <div>
                                                     <label htmlFor={'order-variant'}>Variants</label>
                                                     <Dropdown
-                                                        value={productDetails[index].variantId}
-                                                        options={variants.map((variant) => {
-                                                            return  {
+                                                        options={variants.map((variant: Variant) => {
+                                                            return {
                                                                 label: variant.name,
-                                                                value: variant.id
+                                                                value: variant.id.toString()
                                                             }
                                                         })}
                                                         changeHandler={
@@ -139,8 +148,6 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                                                     <label>Qty</label>
                                                     <input id={'order-qty'}
                                                            type="number"
-                                                           value={productDetails[index].qty}
-                                                           className="input-form"
                                                            onChange={(event: ChangeEvent<HTMLInputElement>) => {
                                                                const qty = event.target.value;
                                                                const arrQty = qty.split('');
@@ -178,8 +185,8 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-    const products = await prisma.product.findMany();
-    const variants = await prisma.variant.findMany();
+    const products: Product[] = await prisma.product.findMany();
+    const variants: Variant[] = await prisma.variant.findMany();
 
     const mappedProducts: Array<SerializedProduct> = products.map(({id, name}) => ({id, name}))
 
