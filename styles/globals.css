@@ -43,6 +43,13 @@
     label {
         @apply font-medium mb-2 inline-block;
     }
+
+    input {
+        @apply placeholder:text-sm placeholder:tracking-tight placeholder:font-light placeholder:xl:text-base
+        focus:border-amber-700 focus:ring-0 border focus:outline-none
+        w-full rounded p-2 tracking-tight font-normal text-sm xl:text-base border-gray-300
+        read-only:bg-gray-300 read-only:border-gray-300 read-only:focus:ring-0 read-only:focus:border-gray-300 read-only:text-gray-500;
+    }
 }
 
 
