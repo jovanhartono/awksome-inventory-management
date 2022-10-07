@@ -5,8 +5,7 @@ import Dropdown from "../components/dropdown";
 import {ChangeEvent, FormEvent, Fragment, useEffect, useState} from "react";
 import {PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
 import {prisma} from "../prisma/config";
-import {SerializedProduct} from "../types/prisma.types";
-import {Product, Variant} from "@prisma/client";
+import {Product as PrismaProduct, Variant as PrismaVariant} from "@prisma/client";
 import {nanoid} from "nanoid";
 
 type ProductDetail = {
@@ -17,10 +16,11 @@ type ProductDetail = {
 }
 
 type OrderProps = {
-    products: Array<SerializedProduct>,
-    variants: Array<Variant>
+    products: Array<ProductDropdown>,
+    variants: Array<PrismaVariant>
 }
 
+type ProductDropdown = Omit<PrismaProduct, "updatedAt">;
 
 const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
     const baseProduct: ProductDetail = {
@@ -116,10 +116,10 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                                                 </div>
                                                 <Dropdown
                                                     value={productDetails[index].productId}
-                                                    options={products.map((product: SerializedProduct) => {
+                                                    options={products.map((product: ProductDropdown) => {
                                                         return {
                                                             label: product.name,
-                                                            value: product.id.toString()
+                                                            value: product.id
                                                         }
                                                     })}
                                                     changeHandler={({value}) => {
@@ -131,10 +131,10 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
                                                 <div>
                                                     <label htmlFor={'order-variant'}>Variants</label>
                                                     <Dropdown
-                                                        options={variants.map((variant: Variant) => {
+                                                        options={variants.map((variant: PrismaVariant) => {
                                                             return {
                                                                 label: variant.name,
-                                                                value: variant.id.toString()
+                                                                value: variant.id
                                                             }
                                                         })}
                                                         changeHandler={
@@ -185,10 +185,15 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-    const products: Product[] = await prisma.product.findMany();
-    const variants: Variant[] = await prisma.variant.findMany();
+    const products: ProductDropdown[] = await prisma.product.findMany({
+        select: {
+            name: true,
+            id: true
+        }
+    });
+    const variants: PrismaVariant[] = await prisma.variant.findMany();
 
-    const mappedProducts: Array<SerializedProduct> = products.map(({id, name}) => ({id, name}))
+    const mappedProducts: Array<ProductDropdown> = products.map(({id, name}) => ({id, name}))
 
     return {
         props: {
