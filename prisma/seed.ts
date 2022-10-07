@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { variants, products } from '../lib/seed';
+import {nanoid} from "nanoid";
 
 const prisma = new PrismaClient();
 
@@ -21,30 +22,27 @@ async function main() {
     await prisma.variant.deleteMany();
     console.log('Succesfully deleted variant');
 
-    await prisma.$queryRaw`ALTER TABLE OrderDetails AUTO_INCREMENT = 1`
-    console.log('reset order detail auto increment to 1')
-
-    await prisma.$queryRaw`ALTER TABLE ProductDetail AUTO_INCREMENT = 1`
-    console.log('reset product detail auto increment to 1')
-
-    await prisma.$queryRaw`ALTER TABLE Product AUTO_INCREMENT = 1`
-    console.log('reset product auto increment to 1')
-
-    await prisma.$queryRaw`ALTER TABLE Variant AUTO_INCREMENT = 1`
-    console.log('reset variant auto increment to 1')
-
     console.log(`Start seeding ...`)
     for (const data of variants) {
         const variant = await prisma.variant.create({
-            data
+            data: {
+                id: `VR-${nanoid(5)}`,
+                name: data.name
+            }
         })
         console.log(`Created variant with name: ${variant.name}`)
     }
 
-    await prisma.product.createMany({
-        data: products
-    })
-    console.log('Finished adding products')
+    for (const data of products) {
+        const product = await prisma.product.create({
+            data: {
+                id: `PR-${nanoid(5)}`,
+                name: data.name
+            }
+        })
+
+        console.log(`Created product with name: ${product.name}`);
+    }
 
     console.log(`Seeding finished.`)
 }
