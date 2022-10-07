@@ -36,7 +36,6 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
         setProductDetails([{...baseProduct, key: nanoid(10)}]);
     }, []);
 
-
     const handleProductDetails = (value: string, index: number, key: keyof ProductDetail) => {
         setProductDetails((currentValue: ProductDetail[]) => {
             const newValue = currentValue;

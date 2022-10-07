@@ -1,4 +1,4 @@
-import {GetStaticProps, NextPage} from "next";
+import {GetServerSideProps, NextPage} from "next";
 import {Variant as PrismaVariant} from "@prisma/client";
 import {prisma} from "prisma/config";
 import Head from "next/head";
@@ -233,7 +233,7 @@ const ProductPage: NextPage<ProductPageProps> = ({products, variants}: ProductPa
 
 export default ProductPage;
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getServerSideProps: GetServerSideProps = async () => {
     const products = await prisma.product.findMany({
         select: {
             id: true,

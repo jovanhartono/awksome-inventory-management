@@ -26,7 +26,7 @@ export default function Header() {
             <div className="flex justify-between items-center px-6 pt-6">
                 <h1>Awksome</h1>
                 <div className="relative w-10 h-10 rounded-full">
-                    <Image src={Logo} layout={'fill'} objectFit={'cover'} objectPosition={'top'}/>
+                    <Image src={Logo} layout={'fill'} objectFit={'cover'} objectPosition={'top'} alt={"logo"}/>
                 </div>
             </div>
             <div className="flex space-x-4 px-6">
