@@ -64,4 +64,8 @@
         w-full rounded p-2 tracking-tight font-normal text-sm xl:text-base border-gray-300
         read-only:bg-gray-300 read-only:border-gray-300 read-only:focus:ring-0 read-only:focus:border-gray-300 read-only:text-gray-500;
     }
+
+    .button-small {
+        @apply flex items-center border border-gray-400 hover:text-gray-700 hover:border-gray-700 basic-transition rounded py-1 px-2 text-gray-500 font-light text-sm;
+    }
 }
