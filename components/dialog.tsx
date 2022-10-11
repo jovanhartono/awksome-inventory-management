@@ -1,5 +1,6 @@
 import {Fragment, ReactNode, useEffect, useState} from "react";
 import {Transition, Dialog as HeadlessDialog} from "@headlessui/react";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 interface DialogProps {
     isOpen: boolean,
@@ -8,7 +9,7 @@ interface DialogProps {
     children?: ReactNode
 }
 
-export default function Dialog (dialogProps: DialogProps) {
+export default function Dialog(dialogProps: DialogProps) {
     const [isOpen, setIsOpen] = useState<boolean>(dialogProps.isOpen);
 
     useEffect(() => {
@@ -32,7 +33,7 @@ export default function Dialog (dialogProps: DialogProps) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black bg-opacity-25" />
+                    <div className="fixed inset-0 bg-black bg-opacity-25"/>
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -46,12 +47,18 @@ export default function Dialog (dialogProps: DialogProps) {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <HeadlessDialog.Panel className="w-full max-w-md transform overflow-hidden rounded bg-white p-5 text-left align-middle shadow-xl transition-all">
+                            <HeadlessDialog.Panel
+                                className="w-full max-w-md transform overflow-hidden rounded bg-white p-5 text-left align-middle shadow-xl transition-all">
                                 <HeadlessDialog.Title
-                                    as="h3"
-                                    className="text-xl font-medium leading-6 text-gray-900"
+                                    as="div"
+                                    className="flex justify-between items-center"
                                 >
-                                    {dialogProps.title}
+                                    <h3 className="text-xl font-medium leading-6 text-gray-900">
+                                        {dialogProps.title}
+                                    </h3>
+                                    <button className="p-2 rounded-full bg-amber-100" onClick={closeDialog}>
+                                        <XMarkIcon className={"w-4 h-4 text-amber-700"}/>
+                                    </button>
                                 </HeadlessDialog.Title>
                                 {
                                     dialogProps.children
