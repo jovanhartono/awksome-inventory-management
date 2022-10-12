@@ -18,23 +18,23 @@ export default async function handler(request: NextApiRequest, response: NextApi
                     deleteMany: {
                         variantId: {notIn: details.map(({variantId}) => variantId)}
                     },
-                    // upsert: details.map(({variantId, qty, price}) => {
-                    //     return {
-                    //         where: {
-                    //             productDetailCompositeID: {variantId, productId}
-                    //         },
-                    //         update: {qty, price},
-                    //         create: {
-                    //             qty,
-                    //             price,
-                    //             variant: {
-                    //                 connect: {
-                    //                     id: variantId
-                    //                 }
-                    //             }
-                    //         }
-                    //     }
-                    // })
+                    upsert: details.map(({variantId, qty, price}) => {
+                        return {
+                            where: {
+                                productDetailCompositeID: {variantId, productId}
+                            },
+                            update: {qty, price},
+                            create: {
+                                qty,
+                                price,
+                                variant: {
+                                    connect: {
+                                        id: variantId
+                                    }
+                                }
+                            }
+                        }
+                    })
                 }
             }
         });
