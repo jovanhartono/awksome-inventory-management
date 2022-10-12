@@ -3,13 +3,13 @@ import {Variant as PrismaVariant} from "@prisma/client";
 import {prisma} from "prisma/config";
 import Head from "next/head";
 import {ArrowRightIcon, ChevronDownIcon, MinusIcon, PlusIcon} from "@heroicons/react/24/outline";
-import {ChangeEvent, Fragment, useMemo, useState} from "react";
+import {ChangeEvent, Fragment, useEffect, useMemo, useState} from "react";
 import Dialog from "components/dialog";
 import TextField from "components/text-field";
 import Dropdown from "components/dropdown";
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import {useFieldArray, useForm} from "react-hook-form";
+import {useFieldArray, useForm, useWatch} from "react-hook-form";
 import axios from "lib/axios";
 import {AxiosError} from "axios";
 import {Product, ProductDetail} from "types/prisma.types";
@@ -32,7 +32,7 @@ const schema = z.object({
     }).array()
 }).required();
 
-const ProductPage: NextPage<ProductPageProps> = ({products, variants}: ProductPageProps) => {
+const ProductPage: NextPage<ProductPageProps> = ({products, variants: variantsProp}: ProductPageProps) => {
     const {
         register,
         handleSubmit,
@@ -54,17 +54,29 @@ const ProductPage: NextPage<ProductPageProps> = ({products, variants}: ProductPa
             ]
         }
     });
-    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [searchQuery, setSearchQuery] = useState<string>('');
-    const filterProducts = useMemo(() => {
-        return products.filter((product: Product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [searchQuery]);
+    const productDetails = useWatch({
+        name: "details",
+        control
+    })
 
     const {fields, append, remove} = useFieldArray({
         name: 'details',
         control
     })
+    const [variants, setVariants] = useState<PrismaVariant[]>(variantsProp);
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const filterProducts = useMemo(() => {
+        return products.filter((product: Product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [searchQuery]);
     const router = useRouter();
+
+    useEffect(() => {
+        setVariants(() => {
+            const selectedVariantId: string[] = productDetails.map(({variantId}) => variantId);
+            return variantsProp.filter(({id}) => !selectedVariantId.includes(id));
+        });
+    }, [productDetails]);
 
     async function onSubmit(data: ProductInputForm) {
         try {
@@ -118,6 +130,7 @@ const ProductPage: NextPage<ProductPageProps> = ({products, variants}: ProductPa
                                                         </div>
                                                         :
                                                         <button
+                                                            type={"button"}
                                                             className="button-small max-w-max"
                                                             onClick={() => {
                                                                 append({

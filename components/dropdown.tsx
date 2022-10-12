@@ -1,6 +1,6 @@
 import {Fragment, useEffect, useState} from "react";
 import {Listbox, Transition} from '@headlessui/react'
-import {CheckIcon, ChevronUpDownIcon} from "@heroicons/react/24/outline";
+import {CheckIcon, ChevronUpDownIcon, XMarkIcon} from "@heroicons/react/24/outline";
 
 type DropdownPayload = {
     label: string,
@@ -65,6 +65,13 @@ const Dropdown = ({value, options, changeHandler}: DropdownProps) => {
                                     )}
                                 </Listbox.Option>
                             ))}
+                            {
+                                options.length === 0 &&
+                                <Listbox.Option disabled={true} value={'empty'} className={"bg-slate-200 py-2 px-4 flex items-center"}>
+                                    <XMarkIcon className={"w-5 h-5 text-slate-700"}/>
+                                    <span className={"text-sm font-light text-slate-700"}>No more variants</span>
+                                </Listbox.Option>
+                            }
                         </Listbox.Options>
                     </Transition>
                 </div>
