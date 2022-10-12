@@ -25,10 +25,7 @@ type ProductDetailPageProps = {
 
 export default function ProductDetail({product}: ProductDetailPageProps) {
     const {register, handleSubmit, formState: {errors}, control} = useForm<ProductForm>({
-        defaultValues: {
-            name: product.name,
-            productDetail: product.productDetail
-        },
+
     });
     const {fields, append, remove} = useFieldArray({
         name: 'productDetail',
@@ -72,7 +69,7 @@ export default function ProductDetail({product}: ProductDetailPageProps) {
                     </button>
                 </form>
                 {
-                    product.productDetail.map((detail, index: number) => {
+                    product?.productDetail && product.productDetail.map((detail, index: number) => {
                         return (
                             <div key={index}>
                                 <span>qty: {detail.qty}</span>
