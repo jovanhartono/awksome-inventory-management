@@ -66,6 +66,13 @@
     }
 
     .button-small {
-        @apply flex items-center border border-gray-400 hover:text-gray-700 hover:border-gray-700 basic-transition rounded py-1 px-2 text-gray-500 font-light text-sm;
+        @apply flex items-center border border-gray-400 hover:text-gray-700 hover:border-gray-700 basic-transition
+        rounded py-1 px-2 text-gray-500 font-light text-sm;
+    }
+
+    .button-submit {
+        @apply basic-transition w-full justify-center rounded-md border border-transparent bg-amber-100 px-4 py-2
+        text-sm font-medium text-amber-700 hover:bg-amber-200 focus:outline-none focus-visible:ring-2
+        focus-visible:ring-amber-500 focus-visible:ring-offset-2
     }
 }

@@ -169,7 +169,7 @@ const ProductPage: NextPage<ProductPageProps> = ({products, variants}: ProductPa
 
                         <button
                             type="submit"
-                            className="basic-transition !mt-6 w-full justify-center rounded-md border border-transparent bg-amber-100 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+                            className="!mt-6 button-submit"
                         >
                             Store Products
                         </button>
