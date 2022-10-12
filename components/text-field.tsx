@@ -1,6 +1,6 @@
 import {forwardRef} from "react";
 import {UseFormRegister} from "react-hook-form";
-import {ProductInputForm} from "../types/dto";
+import {ProductDTO} from "types/dto";
 
 interface TextFieldProps {
     label: string,
@@ -8,7 +8,7 @@ interface TextFieldProps {
     defaultValue?: string | number
 }
 
-type RefProps = TextFieldProps & ReturnType<UseFormRegister<ProductInputForm>>
+type RefProps = TextFieldProps & ReturnType<UseFormRegister<ProductDTO>>
 
 const TextField = forwardRef<HTMLInputElement, RefProps>(({defaultValue, onChange, inputType, label, name}, ref) => {
     return (

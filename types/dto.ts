@@ -1,4 +1,4 @@
-export type ProductInputForm = {
+export type ProductDTO = {
     name: string,
     details: {
         qty: number,
