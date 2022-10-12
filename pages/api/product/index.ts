@@ -1,7 +1,8 @@
 import type {NextApiRequest, NextApiResponse} from 'next'
-import {prisma} from "../../prisma/config";
+import {prisma} from "../../../prisma/config";
 import {nanoid} from "nanoid";
-import {ProductInputForm} from "../../types/dto";
+import {ProductInputForm} from "../../../types/dto";
+import axios from "axios";
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
     if (request.method === 'POST') {
@@ -28,6 +29,14 @@ export default async function handler(request: NextApiRequest, response: NextApi
                 }
             }
         });
+
+        await axios.post(`${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`, {
+            path: 'product'
+        })
+
+        await axios.post(`${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`, {
+            path: 'order'
+        })
 
         response.status(200).json(product);
     } else {
