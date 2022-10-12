@@ -169,7 +169,7 @@ const Order: NextPage<OrderProps> = ({products, variants}: OrderProps) => {
 
                         <div>
                             <button type="submit"
-                                    className={'w-full mt-3 text-gray-50 capitalize bg-blue-500 text-center p-2 rounded-xl'}
+                                    className={'mt-3 button-submit'}
                             >
                                 Add Order
                             </button>
