@@ -1,27 +1,11 @@
 import {NextApiRequest, NextApiResponse} from "next";
 import {prisma} from "prisma/config";
+import {ProductDTO} from "types/dto";
+import axios from "axios";
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
     const {id: productId} = request.query as { id: string };
-    console.log(productId);
-
-    const changes = [
-        {
-            id: '1',
-            price: 10000,
-            qty: 1
-        },
-        {
-            id: '2',
-            price: 20000,
-            qty: 2
-        },
-        {
-            id: '3',
-            price: 30000,
-            qty: 3
-        }
-    ]
+    const {name: productName, details}: ProductDTO = request.body;
 
     if (request.method === 'PUT') {
         await prisma.product.update({
@@ -29,28 +13,25 @@ export default async function handler(request: NextApiRequest, response: NextApi
                 id: productId
             },
             data: {
-                name: 'updated name',
+                name: productName,
                 productDetail: {
                     deleteMany: {
-                        id: {notIn: ['1', '2', '3']}
+                        variantId: {notIn: details.map(({variantId}) => variantId)}
                     },
-                    upsert: changes.map((value) => {
+                    upsert: details.map(({variantId, qty, price}) => {
                         return {
                             where: {
-                                id: value.id
+                                productDetailCompositeID: {variantId, productId}
                             },
+                            update: {qty, price},
                             create: {
-                                price: 10,
-                                qty: 5,
+                                qty,
+                                price,
                                 variant: {
                                     connect: {
-                                        id: '1'
+                                        id: variantId
                                     }
                                 }
-                            },
-                            update: {
-                                qty: value.qty,
-                                price: value.price
                             }
                         }
                     })
@@ -58,8 +39,17 @@ export default async function handler(request: NextApiRequest, response: NextApi
             }
         });
 
-        console.log('success');
-    }
+        await axios.post(`${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`, {
+            path: 'product'
+        })
 
-    response.status(200).send('ok');
+        await axios.post(`${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`, {
+            path: 'order'
+        })
+
+        response.status(200).send('Successfully update product.');
+    } else {
+        response.status(404).send('Method not allowed!');
+    }
 }
+
