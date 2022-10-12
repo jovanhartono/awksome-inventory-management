@@ -1,12 +1,12 @@
 import type {NextApiRequest, NextApiResponse} from 'next'
 import {prisma} from "../../../prisma/config";
 import {nanoid} from "nanoid";
-import {ProductInputForm} from "../../../types/dto";
+import {ProductDTO} from "../../../types/dto";
 import axios from "axios";
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
     if (request.method === 'POST') {
-        const {name, details}: ProductInputForm = request.body as ProductInputForm;
+        const {name, details}: ProductDTO = request.body as ProductDTO;
         const productId = `PR-${nanoid(5)}`;
 
         const product = await prisma.product.create({

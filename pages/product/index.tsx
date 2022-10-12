@@ -14,7 +14,7 @@ import axios from "lib/axios";
 import {AxiosError} from "axios";
 import {Product, ProductDetail} from "types/prisma.types";
 import {Disclosure} from "@headlessui/react";
-import {ProductInputForm} from "types/dto";
+import {ProductDTO} from "types/dto";
 import Link from "next/link";
 import {useRouter} from "next/router";
 
@@ -40,7 +40,7 @@ const ProductPage: NextPage<ProductPageProps> = ({products, variants: variantsPr
         setValue,
         control,
         reset: resetForm
-    } = useForm<ProductInputForm>({
+    } = useForm<ProductDTO>({
         resolver: zodResolver(schema),
         mode: "onChange",
         defaultValues: {
@@ -78,7 +78,7 @@ const ProductPage: NextPage<ProductPageProps> = ({products, variants: variantsPr
         });
     }, [productDetails]);
 
-    async function onSubmit(data: ProductInputForm) {
+    async function onSubmit(data: ProductDTO) {
         try {
             await axios.post('/product', {...data});
             setIsDialogOpen(false);
