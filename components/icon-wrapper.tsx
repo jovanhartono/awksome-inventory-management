@@ -1,3 +1,1 @@
-export default function IconWrapper() {
-
-}
+export default function IconWrapper() {}
