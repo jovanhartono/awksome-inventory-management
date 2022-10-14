@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   MinusIcon,
   PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { ChangeEvent, Fragment, useMemo, useState } from "react";
 import Dialog from "components/dialog";
@@ -22,6 +23,7 @@ import { Disclosure } from "@headlessui/react";
 import { ProductDTO } from "types/dto";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import ButtonSubmit from "../../components/button-submit";
 
 type ProductPageProps = {
   products: Product[];
@@ -47,7 +49,7 @@ const schema = z
 
 const ProductPage: NextPage<ProductPageProps> = ({
   products,
-  variants: variantsProp,
+  variants,
 }: ProductPageProps) => {
   const {
     register,
@@ -65,22 +67,18 @@ const ProductPage: NextPage<ProductPageProps> = ({
         {
           price: 55000,
           qty: 1,
-          variantId: variantsProp[0].id,
+          variantId: variants[0].id,
         },
       ],
     },
   });
-  // const productDetails = useWatch({
-  //   name: "details",
-  //   control,
-  // });
 
   const { fields, append, remove } = useFieldArray({
     name: "details",
     control,
   });
-  const [variants, setVariants] = useState<PrismaVariant[]>(variantsProp);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const filterProducts = useMemo(() => {
     return products.filter((product: Product) =>
@@ -89,24 +87,29 @@ const ProductPage: NextPage<ProductPageProps> = ({
   }, [searchQuery]);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   setVariants(() => {
-  //     const selectedVariantId: string[] = productDetails.map(
-  //       ({ variantId }) => variantId
-  //     );
-  //     return variantsProp.filter(({ id }) => !selectedVariantId.includes(id));
-  //   });
-  // }, [productDetails]);
+  async function deleteProduct(id: string) {
+    try {
+      await axios.delete(`/product/${id}`);
+    } catch (e) {
+      console.warn("Failed to delete product");
+    }
+    finally {
+        router.reload();
+    }
+  }
 
   async function onSubmit(data: ProductDTO) {
+    setLoading(true);
     try {
       await axios.post("/product", { ...data });
-      setIsDialogOpen(false);
-      resetForm();
-      router.reload();
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       console.warn(axiosError.response?.data, axiosError.response?.status);
+    } finally {
+      setLoading(false);
+      setIsDialogOpen(false);
+      resetForm();
+      router.reload();
     }
   }
 
@@ -212,10 +215,11 @@ const ProductPage: NextPage<ProductPageProps> = ({
                 </Fragment>
               );
             })}
-
-            <button type="submit" className="!mt-6 button-submit">
-              Store Products
-            </button>
+            <ButtonSubmit
+              text={"Store Products"}
+              className={"!mt-6"}
+              loading={loading}
+            />
           </form>
         </Dialog>
 
@@ -294,16 +298,27 @@ const ProductPage: NextPage<ProductPageProps> = ({
                         {product.productDetail.length === 0 && (
                           <small>Product has no variants.</small>
                         )}
-                        <Link href={`/product/${product.id}`}>
-                          <a
-                            className={
-                              "basic-transition ml-auto flex items-center max-w-max mt-3 text-sm text-slate-700 rounded px-2.5 py-1.5 bg-slate-200 shadow-sm hover:shadow"
-                            }
+                        <div className="flex items-center mt-6 space-x-3 justify-between">
+                          <Link href={`/product/${product.id}`}>
+                            <a
+                              className={
+                                "basic-transition flex items-center max-w-max text-sm text-slate-700 rounded px-2.5 py-1.5 bg-slate-100 shadow-md"
+                              }
+                            >
+                              <span>Update</span>
+                              <ArrowRightIcon className="ml-1 w-3 h-3" />
+                            </a>
+                          </Link>
+                          <button
+                            className="ring-red-700 ring-1 basic-transition p-2 rounded-full shadow flex items-center justify-center hover:shadow-md"
+                            type={"button"}
+                            onClick={async () => {
+                              await deleteProduct(product.id);
+                            }}
                           >
-                            <span>Update</span>
-                            <ArrowRightIcon className="ml-1 w-3 h-3" />
-                          </a>
-                        </Link>
+                            <TrashIcon className={"w-4 h-4 text-amber-700"} />
+                          </button>
+                        </div>
                       </div>
                     </Disclosure.Panel>
                   </>
@@ -350,9 +365,9 @@ export const getStaticProps: GetStaticProps = async () => {
   );
 
   const variants: PrismaVariant[] = await prisma.variant.findMany({
-      orderBy: {
-          name: "asc"
-      }
+    orderBy: {
+      name: "asc",
+    },
   });
 
   return {

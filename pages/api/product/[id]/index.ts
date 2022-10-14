@@ -8,9 +8,19 @@ export default async function handler(
   response: NextApiResponse
 ) {
   const { id: productId } = request.query as { id: string };
-  const { name: productName, details }: ProductDTO = request.body;
 
-  if (request.method === "PUT") {
+  if (request.method === "DELETE") {
+      await prisma.product.delete({
+          where: {
+              id: productId
+          }
+      })
+
+      response.status(200).send("Delete product success");
+  }
+
+  else if (request.method === "PUT") {
+    const { name: productName, details }: ProductDTO = request.body;
     await prisma.product.update({
       where: {
         id: productId,
