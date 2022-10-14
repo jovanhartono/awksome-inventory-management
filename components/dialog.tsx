@@ -33,7 +33,7 @@ export default function Dialog(dialogProps: DialogProps) {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
+          <HeadlessDialog.Backdrop className="fixed inset-0 bg-black bg-opacity-25" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -47,10 +47,10 @@ export default function Dialog(dialogProps: DialogProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <HeadlessDialog.Panel className="w-full max-w-md transform overflow-hidden rounded bg-white p-5 text-left align-middle shadow-xl transition-all">
+              <HeadlessDialog.Panel className="w-full max-w-md transform overflow-hidden rounded bg-white text-left align-middle shadow-xl transition-all">
                 <HeadlessDialog.Title
                   as="div"
-                  className="flex justify-between items-center"
+                  className="flex justify-between items-center px-5 py-4 shadow"
                 >
                   <h3 className="text-xl font-medium leading-6 text-gray-900">
                     {dialogProps.title}
@@ -62,7 +62,9 @@ export default function Dialog(dialogProps: DialogProps) {
                     <XMarkIcon className={"w-4 h-4 text-amber-700"} />
                   </button>
                 </HeadlessDialog.Title>
-                {dialogProps.children}
+                  <div className="px-5 overflow-y-scroll max-h-[75vh] pt-3 pb-5">
+                      {dialogProps.children}
+                  </div>
               </HeadlessDialog.Panel>
             </Transition.Child>
           </div>

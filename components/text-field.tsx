@@ -6,12 +6,13 @@ interface TextFieldProps {
   label: string;
   inputType?: "text" | "number";
   defaultValue?: string | number;
+  placeholder?: string;
 }
 
 type RefProps = TextFieldProps & ReturnType<UseFormRegister<ProductDTO>>;
 
 const TextField = forwardRef<HTMLInputElement, RefProps>(
-  ({ defaultValue, onChange, inputType, label, name }, ref) => {
+  ({ defaultValue, onChange, inputType, label, name, placeholder }, ref) => {
     return (
       <div className="space-y-1">
         <h3>{label}</h3>
@@ -20,6 +21,7 @@ const TextField = forwardRef<HTMLInputElement, RefProps>(
           ref={ref}
           name={name}
           onChange={onChange}
+          placeholder={placeholder}
         />
       </div>
     );
