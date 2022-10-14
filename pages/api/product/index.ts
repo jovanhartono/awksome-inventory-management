@@ -45,13 +45,6 @@ export default async function handler(
         })
       );
 
-      await axios.post(
-        `${process.env.HOST}/api/product/${productId}/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-        {
-          productId,
-        }
-      );
-
       response.status(201).send("Successfully created product.");
     } catch (e) {
       response.status(409).send("Identifier conflict when creating product.");

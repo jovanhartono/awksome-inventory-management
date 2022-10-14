@@ -42,25 +42,24 @@ export default async function handler(
       },
     });
 
-    await axios.post(
-      `${process.env.HOST}/api/product/${productId}/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-      {
-        productId,
-      }
-    );
-
     const revalidatePath: string[] = ["product", "order"];
 
-    await Promise.all(
+    await Promise.all([
       revalidatePath.map((path: string) => {
         axios.post(
           `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
           { path }
         );
-      })
-    );
+      }),
+      axios.post(
+        `${process.env.HOST}/api/product/${productId}/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
+        {
+          productId,
+        }
+      ),
+    ]);
 
-    response.status(200).send("Successfully update product.");
+    await response.status(200).send("Successfully update product.");
   } else {
     response.status(404).send("Method not allowed!");
   }
