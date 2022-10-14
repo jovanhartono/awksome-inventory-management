@@ -17,12 +17,14 @@
     "@prisma/client": "^4.4.0",
     "axios": "^0.27.2",
     "dayjs": "^1.11.5",
+    "immer": "^9.0.15",
     "nanoid": "^3.3.4",
     "next": "12.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.36.1",
-    "zod": "^3.19.1"
+    "zod": "^3.19.1",
+    "zustand": "^4.1.2"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

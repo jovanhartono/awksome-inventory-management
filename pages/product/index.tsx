@@ -8,13 +8,13 @@ import {
   MinusIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
-import { ChangeEvent, Fragment, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, Fragment, useMemo, useState } from "react";
 import Dialog from "components/dialog";
 import TextField from "components/text-field";
 import Dropdown from "components/dropdown";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import axios from "lib/axios";
 import { AxiosError } from "axios";
 import { Product, ProductDetail } from "types/prisma.types";
@@ -65,15 +65,15 @@ const ProductPage: NextPage<ProductPageProps> = ({
         {
           price: 55000,
           qty: 1,
-          variantId: "",
+          variantId: variantsProp[0].id,
         },
       ],
     },
   });
-  const productDetails = useWatch({
-    name: "details",
-    control,
-  });
+  // const productDetails = useWatch({
+  //   name: "details",
+  //   control,
+  // });
 
   const { fields, append, remove } = useFieldArray({
     name: "details",
@@ -89,14 +89,14 @@ const ProductPage: NextPage<ProductPageProps> = ({
   }, [searchQuery]);
   const router = useRouter();
 
-  useEffect(() => {
-    setVariants(() => {
-      const selectedVariantId: string[] = productDetails.map(
-        ({ variantId }) => variantId
-      );
-      return variantsProp.filter(({ id }) => !selectedVariantId.includes(id));
-    });
-  }, [productDetails]);
+  // useEffect(() => {
+  //   setVariants(() => {
+  //     const selectedVariantId: string[] = productDetails.map(
+  //       ({ variantId }) => variantId
+  //     );
+  //     return variantsProp.filter(({ id }) => !selectedVariantId.includes(id));
+  //   });
+  // }, [productDetails]);
 
   async function onSubmit(data: ProductDTO) {
     try {
@@ -123,12 +123,13 @@ const ProductPage: NextPage<ProductPageProps> = ({
           }}
           title={"New Products :)"}
         >
-          <form
-            className="space-y-3"
-            onSubmit={handleSubmit(onSubmit)}
-          >
+          <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-1">
-              <TextField label="Name" {...register("name")} placeholder={'Product name'}/>
+              <TextField
+                label="Name"
+                {...register("name")}
+                placeholder={"Product name"}
+              />
               {errors.name && (
                 <small className="text-sm font-light text-amber-700">
                   {errors.name.message}
@@ -168,6 +169,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
                       )}
                     </div>
                     <Dropdown
+                      value={field.variantId}
                       options={variants.map((variant: PrismaVariant) => {
                         return {
                           value: variant.id,
@@ -227,13 +229,13 @@ const ProductPage: NextPage<ProductPageProps> = ({
               setSearchQuery(event.target.value)
             }
           />
-          <div
-            className="cursor-pointer whitespace-nowrap flex items-center border border-gray-400 hover:text-gray-700 hover:border-gray-700 basic-transition rounded p-2 text-gray-500 font-light text-sm"
+          <button
+            className="button-small py-2 text-base border-gray-300"
             onClick={() => setIsDialogOpen(true)}
           >
             <PlusIcon className="w-4 h-4 text-gray-500 mr-2" />
             Products
-          </div>
+          </button>
         </div>
         <div className="mt-3 space-y-3">
           {filterProducts.map((product: Product) => {
@@ -347,7 +349,11 @@ export const getStaticProps: GetStaticProps = async () => {
     }
   );
 
-  const variants: PrismaVariant[] = await prisma.variant.findMany();
+  const variants: PrismaVariant[] = await prisma.variant.findMany({
+      orderBy: {
+          name: "asc"
+      }
+  });
 
   return {
     props: {

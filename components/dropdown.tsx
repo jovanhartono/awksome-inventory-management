@@ -30,7 +30,7 @@ const Dropdown = ({ value, options, changeHandler }: DropdownProps) => {
     <div className={"w-full"}>
       <Listbox value={selected} onChange={setSelected} by={"value"}>
         <div className="relative">
-          <Listbox.Button className="w-full text-left p-2 border border-gray-300 rounded font-normal text-sm xl:text-base focus:border-amber-700 focus:outline-none">
+          <Listbox.Button className="w-full text-left p-2 border border-gray-300 rounded font-normal text-base focus:border-amber-700 focus:outline-none">
             <span className="block truncate">
               {selected?.label ?? "Select Value"}
             </span>

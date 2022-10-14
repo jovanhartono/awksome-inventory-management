@@ -43,17 +43,21 @@ export default async function handler(
     });
 
     await axios.post(
-      `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
+      `${process.env.HOST}/api/product/${productId}/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
       {
-        path: "product",
+        productId,
       }
     );
 
-    await axios.post(
-      `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-      {
-        path: "order",
-      }
+    const revalidatePath: string[] = ["product", "order"];
+
+    await Promise.all(
+      revalidatePath.map((path: string) => {
+        axios.post(
+          `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
+          { path }
+        );
+      })
     );
 
     response.status(200).send("Successfully update product.");
