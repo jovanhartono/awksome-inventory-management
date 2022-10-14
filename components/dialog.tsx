@@ -62,7 +62,7 @@ export default function Dialog(dialogProps: DialogProps) {
                     <XMarkIcon className={"w-4 h-4 text-amber-700"} />
                   </button>
                 </HeadlessDialog.Title>
-                <div className="touch-auto overflow-y-scroll max-h-[500px] px-5">
+                <div className="touch-auto overflow-scroll max-h-[500px] px-5 webkit-scroll">
                   {dialogProps.children}
                 </div>
               </HeadlessDialog.Panel>

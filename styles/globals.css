@@ -69,4 +69,8 @@
         text-sm font-medium text-amber-700 hover:bg-amber-200 focus:outline-none focus-visible:ring-2
         focus-visible:ring-amber-500 focus-visible:ring-offset-2;
   }
+
+  .webkit-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
 }
