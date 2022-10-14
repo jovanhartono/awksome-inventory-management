@@ -128,7 +128,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
             onSubmit={handleSubmit(onSubmit)}
           >
             <div className="space-y-1">
-              <TextField label="Name" {...register("name")} />
+              <TextField label="Name" {...register("name")} placeholder={'Product name'}/>
               {errors.name && (
                 <small className="text-sm font-light text-amber-700">
                   {errors.name.message}
