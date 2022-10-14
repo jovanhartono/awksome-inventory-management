@@ -124,7 +124,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
           title={"New Products :)"}
         >
           <form
-            className="mt-6 space-y-3 overflow-auto max-h-[75vh]"
+            className="mt-6 space-y-3"
             onSubmit={handleSubmit(onSubmit)}
           >
             <div className="space-y-1">
