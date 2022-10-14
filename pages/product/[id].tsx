@@ -53,6 +53,7 @@ export default function ProductDetail({
   product,
   variants: variantsProp,
 }: ProductDetailPageProps) {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -62,12 +63,12 @@ export default function ProductDetail({
   } = useForm<ProductDTO>({
     mode: "onChange",
     defaultValues: {
-      name: product.name,
-      details: product.productDetail.map((detail) => {
+      name: product?.name,
+      details: product?.productDetail.map((detail) => {
         return {
-          qty: detail.qty,
-          variantId: detail.variant.id,
-          price: detail.price,
+          qty: detail?.qty,
+          variantId: detail?.variant.id,
+          price: detail?.price,
         };
       }),
     },
@@ -130,6 +131,10 @@ export default function ProductDetail({
       setLoading(false);
     }
   };
+
+  if (router.isFallback) {
+    return <h2>LOADING</h2>;
+  }
 
   return (
     <>
@@ -288,7 +293,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   return {
     paths,
-    fallback: false,
+    fallback: true,
   };
 };
 
