@@ -11,7 +11,6 @@ import * as z from "zod";
 import { Fragment, useEffect, useState } from "react";
 import {
   CheckIcon,
-  CogIcon,
   MinusIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -19,6 +18,7 @@ import Dropdown from "../../components/dropdown";
 import { ProductDTO } from "../../types/dto";
 import { Product } from "../../types/prisma.types";
 import { AxiosError, AxiosResponse } from "axios";
+import ButtonSubmit from "../../components/button-submit";
 
 type AlertPayload = {
   show: boolean;
@@ -258,18 +258,7 @@ export default function ProductDetail({
               </Fragment>
             );
           })}
-          <button className="button-submit" type={"submit"}>
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <CogIcon
-                  className={"w-5 h-5 text-amber-700 mr-3 animate-spin"}
-                />
-                Updating
-              </div>
-            ) : (
-              "Update"
-            )}
-          </button>
+          <ButtonSubmit text={"Update"} loading={loading}/>
         </form>
       </section>
     </>
