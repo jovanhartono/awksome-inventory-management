@@ -4,14 +4,15 @@ import { ProductDTO } from "types/dto";
 import axios from "axios";
 
 async function revalidate(id: string) {
-    const revalidatePath: string[] = ["product", "order"];
+    await axios.post(
+        `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
+        { path: "product" }
+    );
 
-    revalidatePath.map(async (path: string) => {
-        await axios.post(
-            `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-            { path }
-        );
-    });
+    await axios.post(
+        `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
+        { path: "order" }
+    );
 
     await axios.post(
         `${process.env.HOST}/api/product/${id}/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
