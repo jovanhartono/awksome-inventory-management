@@ -36,14 +36,12 @@ export default async function handler(
 
       const revalidatePath: string[] = ["product", "order"];
 
-      await Promise.all(
-        revalidatePath.map((path: string) => {
-          axios.post(
-            `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-            { path }
-          );
-        })
-      );
+      revalidatePath.map(async (path: string) => {
+        await axios.post(
+          `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
+          { path }
+        );
+      });
 
       response.status(201).send("Successfully created product.");
     } catch (e) {

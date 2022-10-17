@@ -92,9 +92,10 @@ const ProductPage: NextPage<ProductPageProps> = ({
       await axios.delete(`/product/${id}`);
     } catch (e) {
       console.warn("Failed to delete product");
-    }
-    finally {
+    } finally {
+      setTimeout(() => {
         router.reload();
+      }, 500);
     }
   }
 
@@ -109,7 +110,9 @@ const ProductPage: NextPage<ProductPageProps> = ({
       setLoading(false);
       setIsDialogOpen(false);
       resetForm();
-      router.reload();
+      setTimeout(() => {
+        router.reload();
+      }, 500);
     }
   }
 
