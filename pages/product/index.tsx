@@ -24,6 +24,7 @@ import { ProductDTO } from "types/dto";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import ButtonSubmit from "../../components/button-submit";
+import { useLoaderStore } from "../../store/state";
 
 type ProductPageProps = {
   products: Product[];
@@ -85,17 +86,20 @@ const ProductPage: NextPage<ProductPageProps> = ({
       product.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery]);
+  const { show: showLoader, hide: hideLoader } = useLoaderStore();
   const router = useRouter();
 
   async function deleteProduct(id: string) {
+    showLoader();
     try {
       await axios.delete(`/product/${id}`);
     } catch (e) {
       console.warn("Failed to delete product");
     } finally {
+      hideLoader();
       setTimeout(() => {
         router.reload();
-      }, 500);
+      }, 250);
     }
   }
 
@@ -112,7 +116,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
       resetForm();
       setTimeout(() => {
         router.reload();
-      }, 500);
+      }, 250);
     }
   }
 
@@ -244,7 +248,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
             Products
           </button>
         </div>
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 divide-y divide-gray-100 divide">
           {filterProducts.map((product: Product) => {
             const totalQty = product.productDetail.reduce(
               (acc, curr) => acc + curr.qty,
@@ -256,10 +260,11 @@ const ProductPage: NextPage<ProductPageProps> = ({
                   <>
                     <Disclosure.Button
                       as={"div"}
-                      className={`${open ? "bg-slate-100" : "bg-slate-50"} 
-                                                                   rounded basic-transition p-3 flex
-                                                                   justify-between items-center cursor-pointer 
-                                                                   hover:bg-slate-100`}
+                      className={`${
+                        open && "bg-slate-50"
+                      } rounded basic-transition p-3 flex 
+                      justify-between items-center cursor-pointer 
+                      hover:bg-slate-50`}
                     >
                       <div className="space-y-1 text-gray-700">
                         <h3 className={"capitalize"}>{product.name}</h3>
@@ -267,29 +272,25 @@ const ProductPage: NextPage<ProductPageProps> = ({
                           Total Quantity: {totalQty}
                         </p>
                       </div>
-                      <div className="flex items-center">
-                        <div className="rounded-full p-2 bg-gray-100">
-                          <ChevronDownIcon
-                            className={`${
-                              open && "rotate-180"
-                            } basic-transition w-4 h-4 text-gray-700`}
-                          />
-                        </div>
+                      <div className="flex items-center mr-1">
+                        <ChevronDownIcon
+                          className={`${
+                            open && "rotate-180"
+                          } basic-transition w-4 h-4 text-gray-500`}
+                        />
                       </div>
                     </Disclosure.Button>
 
-                    <Disclosure.Panel className={"p-3 rounded-b bg-gray-50"}>
+                    <Disclosure.Panel className={"p-3 rounded-b"}>
                       <div className="flex flex-col">
                         {product.productDetail.map((details: ProductDetail) => {
                           return (
                             <div
-                              className="grid grid-cols-3 gap-3"
+                              className="grid grid-cols-3 gap-3 text-gray-500 text-sm"
                               key={details.id}
                             >
-                              <h4 className="text-base font-medium">
-                                {details.variant.name}
-                              </h4>
-                              <span className="place-self-center font-light text-sm">
+                              <p className="text-sm">{details.variant.name}</p>
+                              <span className="place-self-center font-light">
                                 {details.qty} pcs
                               </span>
                               <span className={"justify-self-end"}>
@@ -301,26 +302,27 @@ const ProductPage: NextPage<ProductPageProps> = ({
                         {product.productDetail.length === 0 && (
                           <small>Product has no variants.</small>
                         )}
-                        <div className="flex items-center mt-6 space-x-3 justify-between">
-                          <Link href={`/product/${product.id}`}>
-                            <a
-                              className={
-                                "basic-transition flex items-center max-w-max text-sm text-slate-700 rounded px-2.5 py-1.5 bg-slate-100 shadow-md"
-                              }
-                            >
-                              <span>Update</span>
-                              <ArrowRightIcon className="ml-1 w-3 h-3" />
-                            </a>
-                          </Link>
+                        <div className="flex items-center mt-6 space-x-6 justify-between">
                           <button
-                            className="ring-red-700 ring-1 basic-transition p-2 rounded-full shadow flex items-center justify-center hover:shadow-md"
+                            className="text-red-600 ring-red-600 ring-1 basic-transition px-2 py-1 rounded-md shadow flex items-center justify-center hover:shadow-md"
                             type={"button"}
                             onClick={async () => {
                               await deleteProduct(product.id);
                             }}
                           >
-                            <TrashIcon className={"w-4 h-4 text-amber-700"} />
+                            <small>Delete</small>
+                            <TrashIcon className={"w-4 h-4 ml-2"} />
                           </button>
+                          <Link href={`/product/${product.id}`}>
+                            <a
+                              className={
+                                "basic-transition flex items-center max-w-max text-sm text-gray-700 border-b border-b-gray-700"
+                              }
+                            >
+                              <span>Edit</span>
+                              <ArrowRightIcon className="ml-1 w-3 h-3" />
+                            </a>
+                          </Link>
                         </div>
                       </div>
                     </Disclosure.Panel>
