@@ -9,22 +9,13 @@ import TextField from "../../components/text-field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Fragment, useEffect, useState } from "react";
-import {
-  CheckIcon,
-  MinusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { MinusIcon } from "@heroicons/react/24/outline";
 import Dropdown from "../../components/dropdown";
 import { ProductDTO } from "../../types/dto";
 import { Product } from "../../types/prisma.types";
 import { AxiosError, AxiosResponse } from "axios";
 import ButtonSubmit from "../../components/button-submit";
-
-type AlertPayload = {
-  show: boolean;
-  message: string;
-  status: "success" | "error";
-};
+import { AlertStatus, useAlertStore } from "../../store/alert.store";
 
 type ProductDetailPageProps = {
   product: Product;
@@ -83,23 +74,15 @@ export default function ProductDetail({
     name: "details",
   });
   const [loading, setLoading] = useState<boolean>(false);
-  const [alert, setAlert] = useState<AlertPayload>({
-    show: false,
-    message: "Alert Placeholder",
-    status: "success",
-  });
+  const { show: showAlert, hide: hideAlert } = useAlertStore();
   const { query }: NextRouter = useRouter();
   const { id } = query as { id: string };
   const [variants, setVariants] = useState<PrismaVariant[]>(variantsProp);
 
   useEffect(() => {
     errors.details
-      ? setAlert({
-          show: true,
-          status: "error",
-          message: errors.details.message ?? "",
-        })
-      : setAlert({ show: false, status: "success", message: "" });
+      ? showAlert(errors.details.message ?? "", AlertStatus.ERROR)
+      : hideAlert();
     setVariants(() => {
       const selectedVariantId: string[] = productDetails.map(
         ({ variantId }) => variantId
@@ -114,19 +97,11 @@ export default function ProductDetail({
       const res: AxiosResponse<string> = await axios.put(`/product/${id}`, {
         ...data,
       });
-      setAlert({
-        show: true,
-        status: "success",
-        message: res.data,
-      });
+      showAlert(res.data, AlertStatus.SUCCESS);
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       console.warn(axiosError.response?.data, axiosError.response?.status);
-      setAlert({
-        show: true,
-        status: "error",
-        message: "Error nich :(. Tell jovan to fix.",
-      });
+      showAlert("Error nich :(. Tell jovan to fix.", AlertStatus.ERROR);
     } finally {
       setLoading(false);
     }
@@ -142,27 +117,6 @@ export default function ProductDetail({
         <title>Detail</title>
       </Head>
       <section>
-        {alert.show && (
-          <div
-            className={`${
-              alert.status === "success" ? "bg-green-100" : "bg-red-100"
-            } p-3 rounded flex 
-                    space-x-3 items-center mb-3`}
-          >
-            {alert.status === "success" ? (
-              <CheckIcon className={"w-5 h-5 text-green-700"} />
-            ) : (
-              <XMarkIcon className={"w-5 h-5 text-red-700"} />
-            )}
-            <span
-              className={`${
-                alert.status === "success" ? "text-green-700" : "text-red-700"
-              } font-medium`}
-            >
-              {alert.message}
-            </span>
-          </div>
-        )}
         <form onSubmit={handleSubmit(onSubmit)} className={"space-y-3"}>
           <div className="space-y-1">
             <TextField label={"Product Name"} {...register("name")} />
@@ -203,11 +157,10 @@ export default function ProductDetail({
                           }
 
                           // variant array is 0
-                          setAlert({
-                            show: true,
-                            status: "error",
-                            message: "Cannot add anymore variant",
-                          });
+                          showAlert(
+                            "Cannot add anymore variant",
+                            AlertStatus.ERROR
+                          );
                         }}
                       >
                         Add Variant
@@ -258,7 +211,7 @@ export default function ProductDetail({
               </Fragment>
             );
           })}
-          <ButtonSubmit text={"Update"} loading={loading}/>
+          <ButtonSubmit text={"Update"} loading={loading} />
         </form>
       </section>
     </>
