@@ -14,17 +14,17 @@ type AlertPayload = {
 
 type AlertStore = {
   alertState: AlertPayload;
-  show: (message: string, status: AlertStatus) => void;
+  show: (message: string, status?: AlertStatus) => void;
   hide: () => void;
 };
 
 export const useAlertStore = create<AlertStore>((set) => ({
   alertState: {
     visible: false,
-    message: "",
+    message: "Default fallback alert message",
     status: AlertStatus.SUCCESS,
   },
-  show: (message: string, status: AlertStatus) =>
+  show: (message: string, status: AlertStatus = AlertStatus.SUCCESS) =>
     set(
       produce(({ alertState, hide }: AlertStore) => {
         alertState.visible = true;
