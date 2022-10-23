@@ -1,4 +1,4 @@
-import { useLoaderStore } from "../store/state";
+import { useLoaderStore } from "../store/loader.store";
 
 export default function Loader() {
   const { visible: isVisible } = useLoaderStore();
