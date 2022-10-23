@@ -23,12 +23,14 @@ import { Disclosure } from "@headlessui/react";
 import { ProductDTO } from "types/dto";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import ButtonSubmit from "../../components/button-submit";
-import { useLoaderStore } from "../../store/state";
+import ButtonSubmit from "components/button-submit";
+import { useLoaderStore } from "store/loader.store";
+import { AlertStatus, useAlertStore } from "store/alert.store";
 
 type ProductPageProps = {
   products: Product[];
   variants: PrismaVariant[];
+  totalProductQty: number;
 };
 
 const schema = z
@@ -51,6 +53,7 @@ const schema = z
 const ProductPage: NextPage<ProductPageProps> = ({
   products,
   variants,
+  totalProductQty,
 }: ProductPageProps) => {
   const {
     register,
@@ -87,14 +90,17 @@ const ProductPage: NextPage<ProductPageProps> = ({
     );
   }, [searchQuery]);
   const { show: showLoader, hide: hideLoader } = useLoaderStore();
+  const { show: showAlert } = useAlertStore();
   const router = useRouter();
 
   async function deleteProduct(id: string) {
     showLoader();
     try {
       await axios.delete(`/product/${id}`);
+      showAlert("Delete product success");
     } catch (e) {
       console.warn("Failed to delete product");
+      showAlert("Failed to delete product", AlertStatus.ERROR);
     } finally {
       hideLoader();
       setTimeout(() => {
@@ -125,7 +131,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
       <Head>
         <title>Product Page</title>
       </Head>
-      <section>
+      <section className={"space-y-3"}>
         <Dialog
           isOpen={isDialogOpen}
           onClose={() => {
@@ -230,9 +236,14 @@ const ProductPage: NextPage<ProductPageProps> = ({
           </form>
         </Dialog>
 
-        <p className="text-gray-700 font-medium text-lg mb-3">Stored Items</p>
+        <div className="flex justify-between">
+          <h3>Total Product</h3>
+          <p>{totalProductQty}</p>
+        </div>
 
-        <div className="flex justify-between pb-3 items-center space-x-3">
+        <p className="text-gray-700 font-medium text-lg">Stored Items</p>
+
+        <div className="flex justify-between items-center space-x-3">
           <input
             type={"text"}
             placeholder={"Search"}
@@ -248,7 +259,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
             Products
           </button>
         </div>
-        <div className="mt-3 divide-y divide-gray-100 divide">
+        <div className="divide-y divide-gray-100 divide">
           {filterProducts.map((product: Product) => {
             const totalQty = product.productDetail.reduce(
               (acc, curr) => acc + curr.qty,
@@ -260,11 +271,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
                   <>
                     <Disclosure.Button
                       as={"div"}
-                      className={`${
-                        open && "bg-slate-50"
-                      } rounded basic-transition p-3 flex 
-                      justify-between items-center cursor-pointer 
-                      hover:bg-slate-50`}
+                      className={`basic-transition py-3 flex justify-between items-center cursor-pointer`}
                     >
                       <div className="space-y-1 text-gray-700">
                         <h3 className={"capitalize"}>{product.name}</h3>
@@ -375,10 +382,25 @@ export const getStaticProps: GetStaticProps = async () => {
     },
   });
 
+  const productsQty = await prisma.productDetail.groupBy({
+    by: ["productId"],
+    _sum: {
+      qty: true,
+    },
+  });
+
+  const totalProductQty = productsQty.reduce(
+    (accumulator: number, currentValue) => {
+      return accumulator + (currentValue._sum.qty ?? 0);
+    },
+    0
+  );
+
   return {
     props: {
       products: serializedProducts,
       variants,
+      totalProductQty,
     },
   };
 };
