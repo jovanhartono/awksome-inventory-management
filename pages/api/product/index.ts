@@ -35,6 +35,7 @@ export default async function handler(
 
       await response.revalidate("/product");
       await response.revalidate("/order");
+      await response.revalidate(`/product/${productId}`);
 
       response.status(201).send("Successfully created product.");
     } catch (e) {

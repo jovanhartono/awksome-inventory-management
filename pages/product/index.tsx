@@ -396,6 +396,8 @@ export const getStaticProps: GetStaticProps = async () => {
     0
   );
 
+  console.log(serializedProducts);
+
   return {
     props: {
       products: serializedProducts,
