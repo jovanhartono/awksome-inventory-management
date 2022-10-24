@@ -1,26 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "prisma/config";
 import { ProductDTO } from "types/dto";
-import axios from "axios";
-
-async function revalidate(id: string) {
-    await axios.post(
-        `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-        { path: "product" }
-    );
-
-    await axios.post(
-        `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-        { path: "order" }
-    );
-
-    await axios.post(
-        `${process.env.HOST}/api/product/${id}/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-        {
-            productId: id,
-        }
-    );
-}
 
 export default async function handler(
   request: NextApiRequest,
@@ -35,7 +15,9 @@ export default async function handler(
       },
     });
 
-    await revalidate(productId);
+    await response.revalidate("/product");
+    await response.revalidate(`/product/${productId}`);
+    await response.revalidate("/order");
     response.status(200).send("Delete product success");
   } else if (request.method === "PUT") {
     const { name: productName, details }: ProductDTO = request.body;
@@ -70,8 +52,9 @@ export default async function handler(
       },
     });
 
-    await revalidate(productId);
-
+    await response.revalidate("/product");
+    await response.revalidate(`/product/${productId}`);
+    await response.revalidate("/order");
     response.status(200).send("Successfully update product.");
   } else {
     response.status(404).send("Method not allowed!");

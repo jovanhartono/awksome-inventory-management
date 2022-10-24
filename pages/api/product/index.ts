@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../prisma/config";
 import { nanoid } from "nanoid";
 import { ProductDTO } from "../../../types/dto";
-import axios from "axios";
 
 export default async function handler(
   request: NextApiRequest,
@@ -34,15 +33,8 @@ export default async function handler(
         },
       });
 
-      await axios.post(
-        `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-        { path: "product" }
-      );
-
-      await axios.post(
-        `${process.env.HOST}/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`,
-        { path: "order" }
-      );
+      await response.revalidate("/product");
+      await response.revalidate("/order");
 
       response.status(201).send("Successfully created product.");
     } catch (e) {
