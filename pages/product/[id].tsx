@@ -94,9 +94,11 @@ export default function ProductDetail({
   const onSubmit = async (data: ProductDTO) => {
     setLoading(true);
     try {
-      const res: AxiosResponse<string> = await axios.put(`/product/${id}`, {
+      const res = await axios.put<ProductDTO, AxiosResponse<string>>(`/product/${id}`, {
         ...data,
       });
+      await axios.post("/product/revalidate");
+      await axios.post(`/product/${id}/revalidate`);
       showAlert(res.data, AlertStatus.SUCCESS);
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
