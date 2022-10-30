@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "lib/axios";
-import { AxiosError } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { Product, ProductDetail } from "types/prisma.types";
 import { Disclosure } from "@headlessui/react";
 import { ProductDTO } from "types/dto";
@@ -97,6 +97,8 @@ const ProductPage: NextPage<ProductPageProps> = ({
     showLoader();
     try {
       await axios.delete(`/product/${id}`);
+      await axios.post('/product/revalidate');
+      await axios.post(`/product/${id}/revalidate`);
       showAlert("Delete product success");
     } catch (e) {
       console.warn("Failed to delete product");
@@ -112,7 +114,13 @@ const ProductPage: NextPage<ProductPageProps> = ({
   async function onSubmit(data: ProductDTO) {
     setLoading(true);
     try {
-      await axios.post("/product", { ...data });
+      const res = await axios.post<ProductDTO, AxiosResponse<string>>(
+        "/product",
+        { ...data }
+      );
+      const productId = res.data;
+      await axios.post("/product/revalidate");
+      await axios.post(`/product/${productId}/revalidate`);
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       console.warn(axiosError.response?.data, axiosError.response?.status);
@@ -395,8 +403,6 @@ export const getStaticProps: GetStaticProps = async () => {
     },
     0
   );
-
-  console.log(serializedProducts);
 
   return {
     props: {

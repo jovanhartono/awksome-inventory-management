@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../prisma/config";
 import { nanoid } from "nanoid";
-import { ProductDTO } from "../../../types/dto";
+import { ProductDTO } from "types/dto";
 
 export default async function handler(
   request: NextApiRequest,
@@ -33,11 +33,7 @@ export default async function handler(
         },
       });
 
-      await response.revalidate("/product");
-      await response.revalidate("/order");
-      await response.revalidate(`/product/${productId}`);
-
-      response.status(201).send("Successfully created product.");
+      response.status(201).json(productId);
     } catch (e) {
       response.status(409).send("Identifier conflict when creating product.");
     }

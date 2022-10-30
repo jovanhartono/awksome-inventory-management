@@ -15,9 +15,6 @@ export default async function handler(
       },
     });
 
-    await response.revalidate("/product");
-    await response.revalidate(`/product/${productId}`);
-    await response.revalidate("/order");
     response.status(200).send("Delete product success");
   } else if (request.method === "PUT") {
     const { name: productName, details }: ProductDTO = request.body;
@@ -52,9 +49,6 @@ export default async function handler(
       },
     });
 
-    await response.revalidate("/product");
-    await response.revalidate(`/product/${productId}`);
-    await response.revalidate("/order");
     response.status(200).send("Successfully update product.");
   } else {
     response.status(404).send("Method not allowed!");
