@@ -10,8 +10,7 @@ export default async function handler(
   // }
 
   try {
-    const { productId } = request.body;
-    await response.revalidate(`/product/${productId}`);
+    await response.revalidate(`/product`);
     return response.json({ revalidated: true });
   } catch (err) {
     return response.status(500).send("Error revalidating");
