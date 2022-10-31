@@ -19,7 +19,7 @@ export default function Alert() {
       leaveFrom="translate-y-0 opacity-100"
       leaveTo="-translate-y-6 opacity-0"
     >
-      <div className="fixed top-6 flex justify-center left-0 right-0 px-6 md:px-0">
+      <div className="fixed top-6 flex justify-center left-0 right-0 px-6 md:px-0 z-30">
         <div
           className={`${status === AlertStatus.SUCCESS && "bg-green-100"}
                            ${status === AlertStatus.ERROR && "bg-red-100"}
