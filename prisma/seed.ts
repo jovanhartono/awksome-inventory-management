@@ -33,17 +33,6 @@ async function main() {
     console.log(`Created variant with name: ${variant.name}`);
   }
 
-  for (const data of products) {
-    const product = await prisma.product.create({
-      data: {
-        id: `PR-${nanoid(5)}`,
-        name: data.name,
-      },
-    });
-
-    console.log(`Created product with name: ${product.name}`);
-  }
-
   console.log(`Seeding finished.`);
 }
 
