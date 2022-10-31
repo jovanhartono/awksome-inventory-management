@@ -1,5 +1,4 @@
 import { GetStaticProps, NextPage } from "next";
-import { Variant as PrismaVariant } from "@prisma/client";
 import { prisma } from "prisma/config";
 import Head from "next/head";
 import {
@@ -9,7 +8,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { ChangeEvent, Fragment, useMemo, useState } from "react";
+import { ChangeEvent, Fragment, useEffect, useState } from "react";
 import Dialog from "components/dialog";
 import TextField from "components/text-field";
 import Dropdown from "components/dropdown";
@@ -17,21 +16,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "lib/axios";
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 import { Product, ProductDetail } from "types/prisma.types";
 import { Disclosure } from "@headlessui/react";
 import { ProductDTO } from "types/dto";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import ButtonSubmit from "components/button-submit";
 import { useLoaderStore } from "store/loader.store";
 import { AlertStatus, useAlertStore } from "store/alert.store";
-
-type ProductPageProps = {
-  products: Product[];
-  variants: PrismaVariant[];
-  totalProductQty: number;
-};
+import { mutate } from "swr";
+import useProduct from "../../hooks/useProduct";
+import useVariant from "../../hooks/useVariant";
+import useFilter from "../../hooks/useFilter";
 
 const schema = z
   .object({
@@ -50,11 +46,10 @@ const schema = z
   })
   .required();
 
-const ProductPage: NextPage<ProductPageProps> = ({
-  products,
-  variants,
-  totalProductQty,
-}: ProductPageProps) => {
+const ProductPage: NextPage = () => {
+  const { products, isLoading } = useProduct();
+  const { variants } = useVariant();
+
   const {
     register,
     handleSubmit,
@@ -71,7 +66,7 @@ const ProductPage: NextPage<ProductPageProps> = ({
         {
           price: 55000,
           qty: 1,
-          variantId: variants[0].id,
+          variantId: "",
         },
       ],
     },
@@ -84,173 +79,153 @@ const ProductPage: NextPage<ProductPageProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const filterProducts = useMemo(() => {
-    return products.filter((product: Product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+  const filterProducts = useFilter<Product>(products, searchQuery, "name");
   const { show: showLoader, hide: hideLoader } = useLoaderStore();
   const { show: showAlert } = useAlertStore();
-  const router = useRouter();
 
   async function deleteProduct(id: string) {
     showLoader();
     try {
       await axios.delete(`/product/${id}`);
-      await axios.post('/product/revalidate');
-      await axios.post(`/product/${id}/revalidate`);
+      await mutate("/product");
       showAlert("Delete product success");
     } catch (e) {
-      console.warn("Failed to delete product");
       showAlert("Failed to delete product", AlertStatus.ERROR);
     } finally {
       hideLoader();
-      setTimeout(() => {
-        router.reload();
-      }, 250);
     }
   }
 
   async function onSubmit(data: ProductDTO) {
     setLoading(true);
     try {
-      const res = await axios.post<ProductDTO, AxiosResponse<string>>(
-        "/product",
-        { ...data }
-      );
-      const productId = res.data;
-      await axios.post("/product/revalidate");
-      await axios.post(`/product/${productId}/revalidate`);
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError;
-      console.warn(axiosError.response?.data, axiosError.response?.status);
-    } finally {
-      setLoading(false);
+      await axios.post<ProductDTO, AxiosResponse<string>>("/product", {
+        ...data,
+      });
+      await mutate("/product");
       setIsDialogOpen(false);
       resetForm();
-      setTimeout(() => {
-        router.reload();
-      }, 250);
+    } catch (error: unknown) {
+      showAlert("Cannot add product with the same variant.", AlertStatus.ERROR);
+    } finally {
+      setLoading(false);
     }
   }
+
+  useEffect(() => {
+    isLoading ? showLoader() : hideLoader();
+  }, [isLoading]);
 
   return (
     <>
       <Head>
         <title>Product Page</title>
       </Head>
-      <section className={"space-y-3"}>
-        <Dialog
-          isOpen={isDialogOpen}
-          onClose={() => {
-            setIsDialogOpen(false);
-          }}
-          title={"New Products :)"}
-        >
-          <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-1">
-              <TextField
-                label="Name"
-                {...register("name")}
-                placeholder={"Product name"}
-              />
-              {errors.name && (
-                <small className="text-sm font-light text-amber-700">
-                  {errors.name.message}
-                </small>
-              )}
-            </div>
-            {fields.map((field, index: number) => {
-              return (
-                <Fragment key={field.id}>
-                  <div className="space-y-3 flex-grow">
-                    <div className="flex items-center justify-between">
-                      <h3>Variant</h3>
-                      {index > 0 ? (
-                        <div
-                          className="cursor-pointer p-2 flex items-center justify-center rounded-full bg-red-50"
-                          onClick={() => {
-                            remove(index);
-                          }}
-                        >
-                          <MinusIcon className="w-4 h-4 text-red-500" />
-                        </div>
-                      ) : (
-                        <button
-                          type={"button"}
-                          className="button-small max-w-max"
-                          onClick={() => {
-                            append({
-                              qty: 1,
-                              variantId: "",
-                              price: 55000,
-                            });
-                          }}
-                        >
-                          <PlusIcon className="w-4 h-4 text-gray-500 mr-2" />
-                          Add Variant
-                        </button>
-                      )}
-                    </div>
-                    <Dropdown
-                      value={field.variantId}
-                      options={variants.map((variant: PrismaVariant) => {
-                        return {
-                          value: variant.id,
-                          label: variant.name,
-                        };
-                      })}
-                      changeHandler={({ value }) => {
-                        setValue(`details.${index}.variantId`, value);
-                      }}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <TextField
-                        label="Price"
-                        {...register(`details.${index}.price`, {
-                          valueAsNumber: true,
-                        })}
-                      />
-                      {errors.details?.[index]?.price && (
-                        <small className="text-sm font-light text-amber-700">
-                          {errors.details?.[index]?.price?.message}
-                        </small>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <TextField
-                        label="Quantity"
-                        {...register(`details.${index}.qty`, {
-                          valueAsNumber: true,
-                        })}
-                      />
-                      {errors.details?.[index]?.qty && (
-                        <small className="text-sm font-light text-amber-700">
-                          {errors.details?.[index]?.qty?.message}
-                        </small>
-                      )}
-                    </div>
-                  </div>
-                </Fragment>
-              );
-            })}
-            <ButtonSubmit
-              text={"Store Products"}
-              className={"!mt-6"}
-              loading={loading}
+      <Dialog
+        isOpen={isDialogOpen}
+        onClose={() => {
+          setIsDialogOpen(false);
+        }}
+        title={"New Products :)"}
+      >
+        <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-1">
+            <TextField
+              label="Name"
+              {...register("name")}
+              placeholder={"Product name"}
             />
-          </form>
-        </Dialog>
-
-        <div className="flex justify-between">
-          <h3>Total Product</h3>
-          <p>{totalProductQty}</p>
-        </div>
-
+            {errors.name && (
+              <small className="text-sm font-light text-amber-700">
+                {errors.name.message}
+              </small>
+            )}
+          </div>
+          {fields.map((field, index: number) => {
+            return (
+              <Fragment key={field.id}>
+                <div className="space-y-3 flex-grow">
+                  <div className="flex items-center justify-between">
+                    <h3>Variant</h3>
+                    {index > 0 ? (
+                      <div
+                        className="cursor-pointer p-2 flex items-center justify-center rounded-full bg-red-50"
+                        onClick={() => {
+                          remove(index);
+                        }}
+                      >
+                        <MinusIcon className="w-4 h-4 text-red-500" />
+                      </div>
+                    ) : (
+                      <button
+                        type={"button"}
+                        className="button-small max-w-max"
+                        onClick={() => {
+                          append({
+                            qty: 1,
+                            variantId: "",
+                            price: 55000,
+                          });
+                        }}
+                      >
+                        <PlusIcon className="w-4 h-4 text-gray-500 mr-2" />
+                        Add Variant
+                      </button>
+                    )}
+                  </div>
+                  <Dropdown
+                    value={field.variantId}
+                    options={variants.map((variant) => {
+                      return {
+                        value: variant.id,
+                        label: variant.name,
+                      };
+                    })}
+                    changeHandler={({ value }) => {
+                      setValue(`details.${index}.variantId`, value);
+                    }}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <TextField
+                      label="Price"
+                      {...register(`details.${index}.price`, {
+                        valueAsNumber: true,
+                      })}
+                    />
+                    {errors.details?.[index]?.price && (
+                      <small className="text-sm font-light text-amber-700">
+                        {errors.details?.[index]?.price?.message}
+                      </small>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <TextField
+                      label="Quantity"
+                      {...register(`details.${index}.qty`, {
+                        valueAsNumber: true,
+                      })}
+                    />
+                    {errors.details?.[index]?.qty && (
+                      <small className="text-sm font-light text-amber-700">
+                        {errors.details?.[index]?.qty?.message}
+                      </small>
+                    )}
+                  </div>
+                </div>
+              </Fragment>
+            );
+          })}
+          <ButtonSubmit
+            text={"Store Products"}
+            className={"!mt-6"}
+            loading={loading}
+          />
+        </form>
+      </Dialog>
+      <section className={"space-y-3"}>
         <p className="text-gray-700 font-medium text-lg">Stored Items</p>
-
         <div className="flex justify-between items-center space-x-3">
           <input
             type={"text"}
@@ -261,7 +236,10 @@ const ProductPage: NextPage<ProductPageProps> = ({
           />
           <button
             className="button-small py-2 text-base border-gray-300"
-            onClick={() => setIsDialogOpen(true)}
+            onClick={() => {
+              resetForm();
+              setIsDialogOpen(true);
+            }}
           >
             <PlusIcon className="w-4 h-4 text-gray-500 mr-2" />
             Products
@@ -355,49 +333,14 @@ const ProductPage: NextPage<ProductPageProps> = ({
 export default ProductPage;
 
 export const getStaticProps: GetStaticProps = async () => {
-  const products = await prisma.product.findMany({
-    select: {
-      id: true,
-      name: true,
-      productDetail: {
-        include: {
-          variant: true,
-        },
-      },
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
-
-  const serializedProducts: Product[] = products.map(
-    ({ productDetail, ...rest }) => {
-      return {
-        ...rest,
-        productDetail: productDetail.map((details) => {
-          return {
-            ...details,
-            price: details.price.toNumber(),
-          };
-        }),
-      };
-    }
-  );
-
-  const variants: PrismaVariant[] = await prisma.variant.findMany({
-    orderBy: {
-      name: "asc",
-    },
-  });
-
-  const productsQty = await prisma.productDetail.groupBy({
+  const productGroupByProductId = await prisma.productDetail.groupBy({
     by: ["productId"],
     _sum: {
       qty: true,
     },
   });
 
-  const totalProductQty = productsQty.reduce(
+  const totalProductQty = productGroupByProductId.reduce(
     (accumulator: number, currentValue) => {
       return accumulator + (currentValue._sum.qty ?? 0);
     },
@@ -406,8 +349,6 @@ export const getStaticProps: GetStaticProps = async () => {
 
   return {
     props: {
-      products: serializedProducts,
-      variants,
       totalProductQty,
     },
   };
