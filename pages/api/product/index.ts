@@ -5,7 +5,7 @@ import { ProductDTO } from "types/dto";
 
 export default async function handler(
   request: NextApiRequest,
-  response: NextApiResponse<string>
+  response: NextApiResponse
 ) {
   if (request.method === "POST") {
     const { name, details }: ProductDTO = request.body as ProductDTO;
@@ -37,6 +37,23 @@ export default async function handler(
     } catch (e) {
       response.status(409).send("Identifier conflict when creating product.");
     }
+  } else if (request.method === "GET") {
+    const products = await prisma.product.findMany({
+      select: {
+        id: true,
+        name: true,
+        productDetail: {
+          include: {
+            variant: true,
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    response.status(200).json(products);
   } else {
     response.status(404).send("Method not allowed!");
   }
