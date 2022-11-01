@@ -7,7 +7,7 @@ type UseVariant = {
     isError: boolean
 }
 
-export default function useVariant(): UseVariant {
+export function useVariant(): UseVariant {
     const { data, error } = useSWR("/variant");
 
     return {
