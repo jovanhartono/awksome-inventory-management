@@ -1,8 +1,8 @@
-import Header from "./header";
-import Footer from "./footer";
+import Header from "components/nav/header";
+import Footer from "components/nav/footer";
+import Loader from "components/feedback/loader";
+import Alert from "components/feedback/alert";
 import { ReactNode } from "react";
-import Loader from "./loader";
-import Alert from "./alert";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
