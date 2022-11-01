@@ -8,7 +8,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { ChangeEvent, Fragment, useEffect, useState } from "react";
+import { ChangeEvent, Fragment, useState } from "react";
 import Dialog from "components/dialog";
 import TextField from "components/text-field";
 import Dropdown from "components/dropdown";
@@ -25,9 +25,7 @@ import ButtonSubmit from "components/button-submit";
 import { useLoaderStore } from "store/loader.store";
 import { AlertStatus, useAlertStore } from "store/alert.store";
 import { mutate } from "swr";
-import useProduct from "../../hooks/useProduct";
-import useVariant from "../../hooks/useVariant";
-import useFilter from "../../hooks/useFilter";
+import {useFilter, useProduct, useVariant} from "@hooks";
 
 const schema = z
   .object({
@@ -112,9 +110,9 @@ const ProductPage: NextPage = () => {
     }
   }
 
-  useEffect(() => {
-    isLoading ? showLoader() : hideLoader();
-  }, [isLoading]);
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <>
