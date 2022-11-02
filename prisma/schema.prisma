@@ -1,61 +1,56 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
   referentialIntegrity = "prisma"
 }
 
 model Order {
-  id          String       @id @default(cuid())
-  detail OrderDetails[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String         @id @default(cuid())
+  detail    OrderDetails[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 }
 
 model OrderDetails {
-  id          String       @id @default(cuid())
-  orderId String
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id               String        @id @default(cuid())
+  orderId          String
+  order            Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productDetailsId String
-  productDetails ProductDetail @relation(fields: [productDetailsId], references: [id])
-  qty Int
+  productDetails   ProductDetail @relation(fields: [productDetailsId], references: [id])
+  qty              Int
 
   @@index([orderId, productDetailsId])
 }
 
 model Product {
-    id          String       @id @default(cuid())
-    name        String
-    updatedAt DateTime @updatedAt
-
-    productDetail ProductDetail[]
+  id            String          @id @default(cuid())
+  name          String
+  updatedAt     DateTime        @updatedAt
+  productDetail ProductDetail[]
 }
 
 model ProductDetail {
-    id String @unique @default(cuid())
-    productId   String
-    price Decimal
-    qty Int
-    variantId String
-    orderDetail OrderDetails[]
+  id          String         @unique @default(cuid())
+  productId   String
+  price       Decimal
+  qty         Int
+  variantId   String
+  orderDetail OrderDetails[]
+  variant     Variant        @relation(fields: [variantId], references: [id])
+  product     Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-    variant Variant @relation(fields: [variantId], references: [id])
-    product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-    @@index([productId, variantId])
-    @@id([productId, variantId, id])
-    @@unique([productId, variantId], name: "productDetailCompositeID")
+  @@id([productId, variantId, id])
+  @@unique([productId, variantId], name: "productDetailCompositeID")
+  @@index([productId, variantId])
 }
 
 model Variant {
-  id String @id @default(cuid())
-  name String
+  id    String          @id @default(cuid())
+  name  String
   model ProductDetail[]
 }
-
