@@ -11,7 +11,7 @@ import {
 import { ChangeEvent, Fragment, useState } from "react";
 import Dialog from "components/dialog";
 import TextField from "components/text-field";
-import Dropdown from "components/dropdown";
+import ListBox from "components/listBox";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -45,7 +45,7 @@ const schema = z
   .required();
 
 const ProductPage: NextPage = () => {
-  const { products, isLoading } = useProduct();
+  const { products } = useProduct();
   const { variants } = useVariant();
 
   const {
@@ -110,10 +110,6 @@ const ProductPage: NextPage = () => {
     }
   }
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
   return (
     <>
       <Head>
@@ -171,7 +167,7 @@ const ProductPage: NextPage = () => {
                       </button>
                     )}
                   </div>
-                  <Dropdown
+                  <ListBox
                     value={field.variantId}
                     options={variants.map((variant) => {
                       return {
@@ -179,7 +175,7 @@ const ProductPage: NextPage = () => {
                         label: variant.name,
                       };
                     })}
-                    changeHandler={({ value }) => {
+                    onChange={({ value }) => {
                       setValue(`details.${index}.variantId`, value);
                     }}
                   />

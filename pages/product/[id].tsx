@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Fragment, useEffect, useState } from "react";
 import { MinusIcon } from "@heroicons/react/24/outline";
-import Dropdown from "../../components/dropdown";
+import ListBox from "../../components/listBox";
 import { ProductDTO } from "../../types/dto";
 import { Product } from "../../types/prisma.types";
 import { AxiosError, AxiosResponse } from "axios";
@@ -169,7 +169,7 @@ export default function ProductDetail({
                       </button>
                     )}
                   </div>
-                  <Dropdown
+                  <ListBox
                     value={field.variantId}
                     options={variants.map((variant: PrismaVariant) => {
                       return {
@@ -177,7 +177,7 @@ export default function ProductDetail({
                         label: variant.name,
                       };
                     })}
-                    changeHandler={({ value }) => {
+                    onChange={({ value }) => {
                       setValue(`details.${index}.variantId`, value);
                     }}
                   />
