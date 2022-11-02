@@ -16,6 +16,7 @@ import { useProduct } from "@hooks";
 import produce from "immer";
 import { AlertStatus, useAlertStore } from "store/alert.store";
 import { TrashIcon } from "@heroicons/react/20/solid";
+import axios from "../lib/axios";
 
 type ProductDropdown = Omit<PrismaProduct, "updatedAt">;
 
@@ -57,6 +58,7 @@ const Order: NextPage = () => {
     register,
     handleSubmit,
     setValue,
+    getValues,
     control,
     watch,
     formState: { errors },
@@ -106,7 +108,7 @@ const Order: NextPage = () => {
     }
   }, [products]);
 
-  function submitForm(data: OrderForm): void {
+  function handleAddProduct(data: OrderForm): void {
     const isDuplicate = orderDetail.some((item: OrderDetail) => {
       return (
         data.orderDetail.productId === item.productId &&
@@ -126,6 +128,15 @@ const Order: NextPage = () => {
     );
   }
 
+  async function submitOrder() {
+    try {
+      await axios.post("/order", { date: getValues("date"), orderDetail });
+      setOrderDetail([]);
+    } catch (e) {
+        console.log(e);
+    }
+  }
+
   if (isProductLoading) {
     return <p>Loading...</p>;
   }
@@ -142,7 +153,7 @@ const Order: NextPage = () => {
             {dayjs(date).format("dddd, DD MMMM YYYY")}
           </p>
         </div>
-        <form className={"space-y-3"} onSubmit={handleSubmit(submitForm)}>
+        <form className={"space-y-3"} onSubmit={handleSubmit(handleAddProduct)}>
           <div>
             <label htmlFor={"order-date"}>Date</label>
             <input
@@ -266,7 +277,7 @@ const Order: NextPage = () => {
         <button
           type="submit"
           className={"mt-3 button-submit"}
-          onClick={() => setOrderDetail([])}
+          onClick={submitOrder}
         >
           Add Order
         </button>

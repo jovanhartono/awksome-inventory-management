@@ -6,3 +6,14 @@ export type ProductDTO = {
     variantId: string;
   }[];
 };
+
+export type OrderInput = {
+  date: Date;
+  orderDetail: {
+    productId: string;
+    productLabel: string;
+    variantId: string;
+    variantLabel: string;
+    qty: number;
+  }[];
+};

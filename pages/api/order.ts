@@ -1,18 +1,38 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { prisma } from "../../prisma/config";
-import dayjs from "dayjs";
+import { OrderInput } from "types/dto";
+import { prisma } from "prisma/config";
 
 export default async function handler(
-    request: NextApiRequest,
-    response: NextApiResponse
+  request: NextApiRequest,
+  response: NextApiResponse
 ) {
-    if (request.method === "POST") {
-        const variants = await prisma.order.create({
-            data: {
-                createdAt: dayjs(Date.now()).toDate()
-            }
-        });
-
-        response.status(200).json(variants);
+  if (request.method === "POST") {
+    const body = request.body as OrderInput;
+    try {
+      await prisma.order.create({
+        data: {
+          createdAt: body.date,
+          detail: {
+            create: body.orderDetail.map(({ productId, variantId, qty }) => {
+              return {
+                qty,
+                productDetails: {
+                  connect: {
+                      productDetailCompositeID: {
+                          productId,
+                          variantId
+                      }
+                  },
+                },
+              };
+            }),
+          },
+        },
+      });
+      response.status(200).send("ok");
+    } catch (e) {
+      console.log(e);
+      response.status(500).send("error");
     }
+  }
 }
