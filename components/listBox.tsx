@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import {Fragment, useEffect, useState} from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import {
   CheckIcon,
@@ -18,13 +18,11 @@ type DropdownProps = {
 };
 
 const ListBox = ({ value, options, onChange }: DropdownProps) => {
-  const [selected, setSelected] = useState<DropdownPayload>(
-    options.find((x) => x.value === value) ?? options[0]
-  );
+  const [selected, setSelected] = useState<DropdownPayload>();
 
   useEffect(() => {
       setSelected(options.find((x) => x.value === value) ?? options[0]);
-  }, [value]);
+  }, [value, options]);
 
   const isDropdownDisabled = false;
 
@@ -34,7 +32,7 @@ const ListBox = ({ value, options, onChange }: DropdownProps) => {
         <div className="relative">
           <Listbox.Button className="w-full text-left p-2 border border-gray-300 rounded font-normal text-base focus:border-amber-700 focus:outline-none">
             <span className="block truncate">
-              {selected.label}
+              {selected?.label}
             </span>
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <ChevronUpDownIcon
