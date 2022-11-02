@@ -12,7 +12,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import TextField from "components/text-field";
-import { useProduct, useVariant } from "@hooks";
+import { useProduct } from "@hooks";
 import produce from "immer";
 import { AlertStatus, useAlertStore } from "store/alert.store";
 import { TrashIcon } from "@heroicons/react/20/solid";
@@ -49,9 +49,7 @@ const schema = z.object({
 
 const Order: NextPage = () => {
   const { show: showAlert } = useAlertStore();
-
   const { products, isLoading: isProductLoading } = useProduct();
-  const { variants, isLoading: isVariantLoading } = useVariant();
 
   const [orderDetail, setOrderDetail] = useState<OrderDetail[]>([]);
 
@@ -77,15 +75,36 @@ const Order: NextPage = () => {
     control,
     name: "date",
   });
+  const selectedProductId = useWatch({
+    control,
+    name: "orderDetail.productId",
+  });
 
   useEffect(() => {
-    if (products.length > 0 && variants.length > 0) {
+    if (selectedProductId) {
+      const selectedProduct: PrismaVariant = products.filter(
+        (x) => x.id === selectedProductId
+      )[0].productDetail[0].variant;
+
+      setValue("orderDetail.variantId", selectedProduct.id);
+      setValue("orderDetail.variantLabel", selectedProduct.name);
+    }
+  }, [selectedProductId]);
+
+  useEffect(() => {
+    if (products.length > 0) {
       setValue("orderDetail.productId", products[0].id);
       setValue("orderDetail.productLabel", products[0].name);
-      setValue("orderDetail.variantId", variants[0].id);
-      setValue("orderDetail.variantLabel", variants[0].name);
+      setValue(
+        "orderDetail.variantId",
+        products[0].productDetail[0].variant.id
+      );
+      setValue(
+        "orderDetail.variantLabel",
+        products[0].productDetail[0].variant.name
+      );
     }
-  }, [products, variants]);
+  }, [products]);
 
   function submitForm(data: OrderForm): void {
     const isDuplicate = orderDetail.some((item: OrderDetail) => {
@@ -107,7 +126,7 @@ const Order: NextPage = () => {
     );
   }
 
-  if (isProductLoading || isVariantLoading) {
+  if (isProductLoading) {
     return <p>Loading...</p>;
   }
 
@@ -162,12 +181,16 @@ const Order: NextPage = () => {
               </label>
               <ListBox
                 value={watch("orderDetail.variantId")}
-                options={variants.map((variant: PrismaVariant) => {
-                  return {
-                    label: variant.name,
-                    value: variant.id,
-                  };
-                })}
+                options={
+                  products
+                    .find((x) => x.id === watch("orderDetail.productId"))
+                    ?.productDetail.map(({ variant }) => {
+                      return {
+                        label: variant.name,
+                        value: variant.id,
+                      };
+                    }) || []
+                }
                 onChange={({ value, label }) => {
                   setValue(`orderDetail.variantId`, value);
                   setValue(`orderDetail.variantLabel`, label);
