@@ -2,6 +2,10 @@
   "compilerOptions": {
     "target": "es5",
     "baseUrl": "./",
+    "paths": {
+      "@hooks": ["hooks"],
+      "@hooks/*": ["hooks/*"]
+    },
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
