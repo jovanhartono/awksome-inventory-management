@@ -8,13 +8,13 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { ChangeEvent, Fragment, useState } from "react";
+import { ChangeEvent, Fragment, useEffect, useState } from "react";
 import Dialog from "components/dialog";
 import TextField from "components/text-field";
 import ListBox from "components/listBox";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import axios from "lib/axios";
 import { AxiosResponse } from "axios";
 import { Product, ProductDetail } from "types/prisma.types";
@@ -25,7 +25,7 @@ import ButtonSubmit from "components/button-submit";
 import { useLoaderStore } from "store/loader.store";
 import { AlertStatus, useAlertStore } from "store/alert.store";
 import { mutate } from "swr";
-import {useFilter, useProduct, useVariant} from "@hooks";
+import { useFilter, useProduct, useVariant } from "@hooks";
 
 const schema = z
   .object({
@@ -58,16 +58,6 @@ const ProductPage: NextPage = () => {
   } = useForm<ProductDTO>({
     resolver: zodResolver(schema),
     mode: "onChange",
-    defaultValues: {
-      name: "",
-      details: [
-        {
-          price: 55000,
-          qty: 1,
-          variantId: "",
-        },
-      ],
-    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -80,6 +70,17 @@ const ProductPage: NextPage = () => {
   const filterProducts = useFilter<Product>(products, searchQuery, "name");
   const { show: showLoader, hide: hideLoader } = useLoaderStore();
   const { show: showAlert } = useAlertStore();
+
+  const details = useWatch({
+    control,
+    name: "details",
+  });
+
+  useEffect(() => {
+    if (variants.length > 0) {
+      setValue(`details.${0}.variantId`, variants[0].id);
+    }
+  }, [variants]);
 
   async function deleteProduct(id: string) {
     showLoader();
@@ -95,19 +96,22 @@ const ProductPage: NextPage = () => {
   }
 
   async function onSubmit(data: ProductDTO) {
-    setLoading(true);
-    try {
-      await axios.post<ProductDTO, AxiosResponse<string>>("/product", {
-        ...data,
-      });
-      await mutate("/product");
-      setIsDialogOpen(false);
-      resetForm();
-    } catch (error: unknown) {
-      showAlert("Cannot add product with the same variant.", AlertStatus.ERROR);
-    } finally {
-      setLoading(false);
-    }
+      setLoading(true);
+      try {
+        await axios.post<ProductDTO, AxiosResponse<string>>("/product", {
+          ...data,
+        });
+        await mutate("/product");
+        setIsDialogOpen(false);
+        resetForm();
+      } catch (error: unknown) {
+        showAlert(
+          "Cannot add product with the same variant.",
+          AlertStatus.ERROR
+        );
+      } finally {
+        setLoading(false);
+      }
   }
 
   return (
@@ -157,7 +161,7 @@ const ProductPage: NextPage = () => {
                         onClick={() => {
                           append({
                             qty: 1,
-                            variantId: "",
+                            variantId: variants[0].id,
                             price: 55000,
                           });
                         }}
@@ -168,7 +172,7 @@ const ProductPage: NextPage = () => {
                     )}
                   </div>
                   <ListBox
-                    value={field.variantId}
+                    value={details[index]?.variantId ?? ""}
                     options={variants.map((variant) => {
                       return {
                         value: variant.id,
@@ -231,7 +235,16 @@ const ProductPage: NextPage = () => {
           <button
             className="button-small py-2 text-base border-gray-300"
             onClick={() => {
-              resetForm();
+              resetForm({
+                name: "",
+                details: [
+                  {
+                    price: 55000,
+                    qty: 1,
+                    variantId: variants[0].id,
+                  },
+                ],
+              });
               setIsDialogOpen(true);
             }}
           >
