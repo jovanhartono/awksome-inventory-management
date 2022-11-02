@@ -11,7 +11,6 @@ import {
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import TextField from "components/text-field";
 import { useProduct } from "@hooks";
 import produce from "immer";
 import { AlertStatus, useAlertStore } from "store/alert.store";
@@ -133,7 +132,7 @@ const Order: NextPage = () => {
       await axios.post("/order", { date: getValues("date"), orderDetail });
       setOrderDetail([]);
     } catch (e) {
-        console.log(e);
+      console.log(e);
     }
   }
 
@@ -209,12 +208,14 @@ const Order: NextPage = () => {
               />
             </div>
             <div>
-              <TextField
-                label="Quantity"
-                {...register(`orderDetail.qty`, {
-                  valueAsNumber: true,
-                })}
-              />
+              <div className="space-y-1">
+                <h3>Quantity</h3>
+                <input
+                  {...register(`orderDetail.qty`, {
+                    valueAsNumber: true,
+                  })}
+                />
+              </div>
               {errors.orderDetail?.qty && (
                 <small className="text-sm font-light text-amber-700">
                   {errors.orderDetail?.qty?.message}
