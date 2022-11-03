@@ -18,7 +18,7 @@ type DropdownProps = {
 };
 
 const ListBox = ({ value, options, onChange }: DropdownProps) => {
-  const [selected, setSelected] = useState<DropdownPayload>();
+  const [selected, setSelected] = useState<DropdownPayload>(options[0]);
 
   useEffect(() => {
     const selectedOption = options.find((x) => x.value === value) ?? options[0];
@@ -37,7 +37,7 @@ const ListBox = ({ value, options, onChange }: DropdownProps) => {
       >
         <div className="relative">
           <Listbox.Button className="w-full text-left p-2 border border-gray-300 rounded font-normal text-base focus:border-amber-700 focus:outline-none">
-            <span className="block truncate">{selected?.label}</span>
+            <span className="block truncate">{selected?.label ?? "Select"}</span>
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <ChevronUpDownIcon
                 className="h-5 w-5 text-gray-400"
