@@ -2,20 +2,21 @@ import { NextPage } from "next";
 import Head from "next/head";
 import dayjs from "dayjs";
 import ListBox from "components/listBox";
-import { useEffect, useState } from "react";
+import {ChangeEvent, useEffect, useState} from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   Product as PrismaProduct,
   Variant as PrismaVariant,
 } from "@prisma/client";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useProduct } from "@hooks";
 import produce from "immer";
 import { AlertStatus, useAlertStore } from "store/alert.store";
 import { TrashIcon } from "@heroicons/react/20/solid";
-import axios from "../lib/axios";
+import axios from "lib/axios";
+import ButtonSubmit from "components/button-submit";
 
 type ProductDropdown = Omit<PrismaProduct, "updatedAt">;
 
@@ -52,24 +53,20 @@ const Order: NextPage = () => {
   const { products, isLoading: isProductLoading } = useProduct();
 
   const [orderDetail, setOrderDetail] = useState<OrderDetail[]>([]);
+  const [isButtonLoading, setIsButtonLoading] = useState<boolean>(false);
 
   const {
     register,
     handleSubmit,
     setValue,
     getValues,
+    reset: resetForm,
     control,
     watch,
     formState: { errors },
   } = useForm<OrderForm>({
     resolver: zodResolver(schema),
     mode: "onChange",
-    defaultValues: {
-      date: new Date(),
-      orderDetail: {
-        qty: 1,
-      },
-    },
   });
 
   const date = useWatch({
@@ -94,16 +91,16 @@ const Order: NextPage = () => {
 
   useEffect(() => {
     if (products.length > 0) {
-      setValue("orderDetail.productId", products[0].id);
-      setValue("orderDetail.productLabel", products[0].name);
-      setValue(
-        "orderDetail.variantId",
-        products[0].productDetail[0].variant.id
-      );
-      setValue(
-        "orderDetail.variantLabel",
-        products[0].productDetail[0].variant.name
-      );
+      resetForm({
+        date: new Date(),
+        orderDetail: {
+          productId: products[0].productDetail[0].productId,
+          variantId: products[0].productDetail[0].variant.id,
+          productLabel: products[0].name,
+          variantLabel: products[0].productDetail[0].variant.name,
+          qty: 1,
+        },
+      });
     }
   }, [products]);
 
@@ -128,11 +125,19 @@ const Order: NextPage = () => {
   }
 
   async function submitOrder() {
+    if (orderDetail.length <= 0) {
+      showAlert("Product cannot be empty", AlertStatus.ERROR);
+      return;
+    }
+    setIsButtonLoading(true);
     try {
       await axios.post("/order", { date: getValues("date"), orderDetail });
       setOrderDetail([]);
+      showAlert("Successfully add order.");
     } catch (e) {
-      console.log(e);
+      showAlert("There is an error when adding order.", AlertStatus.ERROR);
+    } finally {
+      setIsButtonLoading(false);
     }
   }
 
@@ -155,11 +160,19 @@ const Order: NextPage = () => {
         <form className={"space-y-3"} onSubmit={handleSubmit(handleAddProduct)}>
           <div>
             <label htmlFor={"order-date"}>Date</label>
-            <input
-              id={"order-date"}
-              type="date"
-              {...register("date")}
-              defaultValue={dayjs(new Date()).format("YYYY-MM-DD")}
+            <Controller
+              control={control}
+              name={"date"}
+              render={({field}) => (
+                <input
+                  id={"order-date"}
+                  type="date"
+                  defaultValue={dayjs(new Date()).format("YYYY-MM-DD")}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      field.onChange(dayjs(event.target.value).toDate());
+                  }}
+                />
+              )}
             />
           </div>
           <div className="space-y-3">
@@ -275,13 +288,11 @@ const Order: NextPage = () => {
             </tbody>
           </table>
         </div>
-        <button
-          type="submit"
-          className={"mt-3 button-submit"}
+        <ButtonSubmit
+          text={"Add Order"}
+          loading={isButtonLoading}
           onClick={submitOrder}
-        >
-          Add Order
-        </button>
+        />
       </section>
     </>
   );
