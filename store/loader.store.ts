@@ -1,4 +1,5 @@
 import create from "zustand";
+import produce from "immer";
 
 type LoaderStore = {
   visible: boolean;
@@ -9,11 +10,19 @@ type LoaderStore = {
 export const useLoaderStore = create<LoaderStore>((set) => ({
   visible: false,
   hide: () =>
-    set(() => ({
-      visible: false,
-    })),
+    set(
+      produce((draft: LoaderStore) => {
+        if (draft.visible) {
+          draft.visible = false;
+        }
+      })
+    ),
   show: () =>
-    set(() => ({
-      visible: true,
-    })),
+    set(
+      produce((draft: LoaderStore) => {
+        if (!draft.visible) {
+          draft.visible = true;
+        }
+      })
+    ),
 }));
