@@ -8,7 +8,28 @@ export default async function handler(
 ) {
   const { id: productId } = request.query as { id: string };
 
-  if (request.method === "DELETE") {
+  if (request.method === "GET") {
+    try {
+      const product = await prisma.product.findUnique({
+        where: {
+          id: productId,
+        },
+        select: {
+          id: true,
+          name: true,
+          productDetail: {
+            include: {
+              variant: true,
+            },
+          },
+        },
+      });
+
+      response.status(200).json(product);
+    } catch (e) {
+      response.status(500).send("ERROR");
+    }
+  } else if (request.method === "DELETE") {
     await prisma.product.delete({
       where: {
         id: productId,
