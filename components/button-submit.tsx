@@ -3,13 +3,14 @@ import {CogIcon} from "@heroicons/react/24/outline";
 interface ButtonProps {
     text: string,
     loading?: boolean,
-    className?: string
+    className?: string,
+    onClick?: () => void
 }
 
-const ButtonSubmit = ({text, loading, className}: ButtonProps) => {
+const ButtonSubmit = ({text, loading, className, onClick}: ButtonProps) => {
 
     return (
-        <button className={`button-submit ${className}`} type={"submit"}>
+        <button className={`button-submit ${className}`} type={"submit"} onClick={onClick}>
             {loading ? (
                 <div className="flex items-center justify-center">
                     <CogIcon
