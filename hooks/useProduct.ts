@@ -9,7 +9,7 @@ type UseProduct = {
   isError: boolean;
 };
 
-export function useProduct(id?: string): UseProduct {
+export function useProduct(): UseProduct {
   const { data, error } = useSWR("/product");
   const { show, hide } = useLoaderStore();
 
@@ -20,7 +20,7 @@ export function useProduct(id?: string): UseProduct {
   }, [error, data]);
 
   useEffect(() => {
-      loading ? show() : hide();
+    loading ? show() : hide();
   }, [loading]);
 
   return {
