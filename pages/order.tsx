@@ -2,7 +2,7 @@ import { NextPage } from "next";
 import Head from "next/head";
 import dayjs from "dayjs";
 import ListBox from "components/listBox";
-import {ChangeEvent, useEffect, useState} from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   Product as PrismaProduct,
@@ -78,6 +78,11 @@ const Order: NextPage = () => {
     name: "orderDetail.productId",
   });
 
+  const selectedVariantId = useWatch({
+    control,
+    name: "orderDetail.variantId",
+  });
+
   useEffect(() => {
     if (selectedProductId) {
       const selectedProduct: PrismaVariant = products.filter(
@@ -88,6 +93,15 @@ const Order: NextPage = () => {
       setValue("orderDetail.variantLabel", selectedProduct.name);
     }
   }, [selectedProductId]);
+
+  const availableQty = useMemo(() => {
+    const product = products.find(({ id }) => id === selectedProductId);
+    return (
+      product?.productDetail.find(
+        ({ variant }) => variant.id === selectedVariantId
+      )?.qty ?? 0
+    );
+  }, [selectedProductId, selectedVariantId]);
 
   useEffect(() => {
     if (products.length > 0) {
@@ -163,13 +177,13 @@ const Order: NextPage = () => {
             <Controller
               control={control}
               name={"date"}
-              render={({field}) => (
+              render={({ field }) => (
                 <input
                   id={"order-date"}
                   type="date"
                   defaultValue={dayjs(new Date()).format("YYYY-MM-DD")}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      field.onChange(dayjs(event.target.value).toDate());
+                    field.onChange(dayjs(event.target.value).toDate());
                   }}
                 />
               )}
@@ -222,7 +236,12 @@ const Order: NextPage = () => {
             </div>
             <div>
               <div className="space-y-1">
-                <h3>Quantity</h3>
+                <div className={"flex justify-between items-center"}>
+                  <h3>Quantity</h3>
+                  <small className={"text-sm font-light text-amber-700"}>
+                    (stocks: {availableQty})
+                  </small>
+                </div>
                 <input
                   {...register(`orderDetail.qty`, {
                     valueAsNumber: true,

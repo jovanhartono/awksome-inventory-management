@@ -2,17 +2,17 @@ import useSWR from "swr";
 import { Variant as PrismaVariant } from "@prisma/client";
 
 type UseVariant = {
-    variants: Array<PrismaVariant>,
-    isLoading: boolean,
-    isError: boolean
-}
+  variants: Array<PrismaVariant>;
+  isLoading: boolean;
+  isError: boolean;
+};
 
 export function useVariant(): UseVariant {
-    const { data, error } = useSWR("/variant");
+  const { data, error } = useSWR("/variant");
 
-    return {
-        variants: data ?? [],
-        isLoading: !error && !data,
-        isError: error,
-    };
+  return {
+    variants: data ?? [],
+    isLoading: !error && !data,
+    isError: error,
+  };
 }
