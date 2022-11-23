@@ -39,6 +39,13 @@ export default async function handler(
     }
   } else if (request.method === "GET") {
     const products = await prisma.product.findMany({
+      where: {
+        productDetail: {
+          some: {
+            isDeleted: false,
+          },
+        },
+      },
       select: {
         id: true,
         name: true,

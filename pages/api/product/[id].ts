@@ -21,24 +21,35 @@ export default async function handler(
             include: {
               variant: true,
             },
+            where: {
+              isDeleted: false,
+            },
           },
         },
       });
+
+      if (product && product.productDetail.length < 0) {
+        throw new Error("Not Found");
+      }
 
       response.status(200).json(product);
     } catch (e) {
       response.status(500).send("ERROR");
     }
   } else if (request.method === "DELETE") {
-    await prisma.product.delete({
+    await prisma.productDetail.updateMany({
       where: {
-        id: productId,
+        productId,
+      },
+      data: {
+        isDeleted: true,
       },
     });
 
     response.status(200).send("Delete product success");
   } else if (request.method === "PUT") {
     const { name: productName, details }: ProductDTO = request.body;
+
     await prisma.product.update({
       where: {
         id: productId,
@@ -46,9 +57,6 @@ export default async function handler(
       data: {
         name: productName,
         productDetail: {
-          deleteMany: {
-            variantId: { notIn: details.map(({ variantId }) => variantId) },
-          },
           upsert: details.map(({ variantId, qty, price }) => {
             return {
               where: {
@@ -67,6 +75,15 @@ export default async function handler(
             };
           }),
         },
+      },
+    });
+
+    await prisma.productDetail.updateMany({
+      where: {
+        variantId: { notIn: details.map(({ variantId }) => variantId) },
+      },
+      data: {
+        isDeleted: true,
       },
     });
 

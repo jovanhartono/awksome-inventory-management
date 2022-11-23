@@ -41,7 +41,7 @@ export default function ProductDetail() {
   const { query }: NextRouter = useRouter();
   const { id } = query as { id: string };
   const { variants } = useVariant();
-  const { data: product } = useSWR<Product>(`/product/${id}`);
+  const { data: product, error } = useSWR<Product>(`/product/${id}`);
   const {
     register,
     handleSubmit,
@@ -99,6 +99,10 @@ export default function ProductDetail() {
       setLoading(false);
     }
   };
+
+  if (error) {
+    return <h2>Not Found!</h2>;
+  }
 
   if (!product) {
     return <h2>loading...</h2>;
