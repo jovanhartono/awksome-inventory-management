@@ -50,6 +50,9 @@ export default async function handler(
         id: true,
         name: true,
         productDetail: {
+          where: {
+            isDeleted: false,
+          },
           include: {
             variant: true,
           },

@@ -62,7 +62,7 @@ export default async function handler(
               where: {
                 productDetailCompositeID: { variantId, productId },
               },
-              update: { qty, price },
+              update: { qty, price, isDeleted: false },
               create: {
                 qty,
                 price,
@@ -80,6 +80,7 @@ export default async function handler(
 
     await prisma.productDetail.updateMany({
       where: {
+        productId,
         variantId: { notIn: details.map(({ variantId }) => variantId) },
       },
       data: {
