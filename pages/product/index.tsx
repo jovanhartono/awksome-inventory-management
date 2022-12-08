@@ -96,22 +96,19 @@ const ProductPage: NextPage = () => {
   }
 
   async function onSubmit(data: ProductDTO) {
-      setLoading(true);
-      try {
-        await axios.post<ProductDTO, AxiosResponse<string>>("/product", {
-          ...data,
-        });
-        await mutate("/product");
-        setIsDialogOpen(false);
-        resetForm();
-      } catch (error: unknown) {
-        showAlert(
-          "Cannot add product with the same variant.",
-          AlertStatus.ERROR
-        );
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    try {
+      await axios.post<ProductDTO, AxiosResponse<string>>("/product", {
+        ...data,
+      });
+      await mutate("/product");
+      setIsDialogOpen(false);
+      resetForm();
+    } catch (error: unknown) {
+      showAlert("Cannot add product with the same variant.", AlertStatus.ERROR);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
