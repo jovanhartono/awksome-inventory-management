@@ -75,5 +75,38 @@ export default async function handler(
     } catch (e) {
       response.status(500).send("Product quantity must be lower!");
     }
+  } else if (request.method === "GET") {
+    const orderList = await prisma.orderDetails.findMany({
+      select: {
+        qty: true,
+        productDetails: {
+          select: {
+            product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        order: {
+          select: {
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: {
+        order: {
+          createdAt: "asc",
+        },
+      },
+    });
+
+    const flattenOrderList = orderList.map((order) => ({
+        createdAt: order.order.createdAt,
+        productName: order.productDetails.product.name,
+        orderQty: order.qty
+    }))
+
+    response.status(200).send(flattenOrderList);
   }
 }
