@@ -11,12 +11,13 @@ import {
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useProduct } from "@hooks";
+import { useProduct, useOrder } from "@hooks";
 import produce from "immer";
 import { AlertStatus, useAlertStore } from "store/alert.store";
 import { TrashIcon } from "@heroicons/react/20/solid";
 import axios from "lib/axios";
 import ButtonSubmit from "components/button-submit";
+import { OrderList } from "../types/dto";
 
 type ProductDropdown = Omit<PrismaProduct, "updatedAt">;
 
@@ -51,6 +52,7 @@ const schema = z.object({
 const Order: NextPage = () => {
   const { show: showAlert } = useAlertStore();
   const { products, isLoading: isProductLoading } = useProduct();
+  const { orders, isLoading: isOrderLoading } = useOrder();
 
   const [orderDetail, setOrderDetail] = useState<OrderDetail[]>([]);
   const [isButtonLoading, setIsButtonLoading] = useState<boolean>(false);
@@ -155,7 +157,7 @@ const Order: NextPage = () => {
     }
   }
 
-  if (isProductLoading) {
+  if (isProductLoading || isOrderLoading) {
     return <p>Loading...</p>;
   }
 
@@ -312,6 +314,20 @@ const Order: NextPage = () => {
           loading={isButtonLoading}
           onClick={submitOrder}
         />
+      </section>
+      <section className={"space-y-3 mt-6"}>
+        <h2>Order List</h2>
+        <div className="space-y-3">
+          {orders.map((order: OrderList, index: number) => {
+            return (
+              <div className={"rounded shadow p-3"} key={index}>
+                  <small className={"font-light text-sm text-gray-500"}>{dayjs(order.createdAt).format('dddd DD/MM/YYYY')}</small>
+                  <h3 className={"text-gray-700"}>{order.productName}</h3>
+                {order.orderQty}
+                </div>
+            );
+          })}
+        </div>
       </section>
     </>
   );
