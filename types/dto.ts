@@ -17,3 +17,9 @@ export type OrderInput = {
     qty: number;
   }[];
 };
+
+export type OrderList = {
+  createdAt: Date;
+  productName: string;
+  orderQty: string;
+};
