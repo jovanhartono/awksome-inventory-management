@@ -67,7 +67,8 @@ const ProductPage: NextPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const filterProducts = useFilter<Product>(products, searchQuery, "name");
+  const [productSliceIndex, setProductSliceIndex] = useState<number>(3);
+  const filteredProducts = useFilter<Product>(products, searchQuery, "name");
   const { show: showLoader, hide: hideLoader } = useLoaderStore();
   const { show: showAlert } = useAlertStore();
 
@@ -81,6 +82,12 @@ const ProductPage: NextPage = () => {
       setValue(`details.${0}.variantId`, variants[0].id);
     }
   }, [variants]);
+
+  useEffect(() => {
+    setProductSliceIndex(() => {
+      return searchQuery === "" ? 3 : filteredProducts.length;
+    });
+  }, [searchQuery]);
 
   async function deleteProduct(id: string) {
     showLoader();
@@ -250,85 +257,103 @@ const ProductPage: NextPage = () => {
           </button>
         </div>
         <div className="divide-y divide-gray-100 divide">
-          {filterProducts.map((product: Product) => {
-            const totalQty = product.productDetail.reduce(
-              (acc, curr) => acc + curr.qty,
-              0
-            );
-            return (
-              <Disclosure key={product.id} as={"div"}>
-                {({ open }) => (
-                  <>
-                    <Disclosure.Button
-                      as={"div"}
-                      className={`basic-transition py-3 flex justify-between items-center cursor-pointer`}
-                    >
-                      <div className="space-y-1 text-gray-700">
-                        <h3 className={"capitalize"}>{product.name}</h3>
-                        <p className="text-gray-500 text-sm font-light">
-                          Total Quantity: {totalQty}
-                        </p>
-                      </div>
-                      <div className="flex items-center mr-1">
-                        <ChevronDownIcon
-                          className={`${
-                            open && "rotate-180"
-                          } basic-transition w-4 h-4 text-gray-500`}
-                        />
-                      </div>
-                    </Disclosure.Button>
-
-                    <Disclosure.Panel className={"p-3 rounded-b"}>
-                      <div className="flex flex-col">
-                        {product.productDetail.map((details: ProductDetail) => {
-                          return (
-                            <div
-                              className="grid grid-cols-3 gap-3 text-gray-500 text-sm"
-                              key={details.id}
-                            >
-                              <p className="text-sm">{details.variant.name}</p>
-                              <span className="place-self-center font-light">
-                                {details.qty} pcs
-                              </span>
-                              <span className={"justify-self-end"}>
-                                Rp {details.price.toLocaleString("id")}
-                              </span>
-                            </div>
-                          );
-                        })}
-                        {product.productDetail.length === 0 && (
-                          <small>Product has no variants.</small>
-                        )}
-                        <div className="flex items-center mt-6 space-x-6 justify-between">
-                          <button
-                            className="text-red-600 ring-red-600 ring-1 basic-transition px-2 py-1 rounded-md shadow flex items-center justify-center hover:shadow-md"
-                            type={"button"}
-                            onClick={async () => {
-                              await deleteProduct(product.id);
-                            }}
-                          >
-                            <small>Delete</small>
-                            <TrashIcon className={"w-4 h-4 ml-2"} />
-                          </button>
-                          <Link href={`/product/${product.id}`}>
-                            <a
-                              className={
-                                "basic-transition flex items-center max-w-max text-sm text-gray-700 border-b border-b-gray-700"
-                              }
-                            >
-                              <span>Edit</span>
-                              <ArrowRightIcon className="ml-1 w-3 h-3" />
-                            </a>
-                          </Link>
+          {filteredProducts
+            .slice(0, productSliceIndex)
+            .map((product: Product) => {
+              const totalQty = product.productDetail.reduce(
+                (acc, curr) => acc + curr.qty,
+                0
+              );
+              return (
+                <Disclosure key={product.id} as={"div"}>
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button
+                        as={"div"}
+                        className={`basic-transition py-3 flex justify-between items-center cursor-pointer`}
+                      >
+                        <div className="space-y-1 text-gray-700">
+                          <h3 className={"capitalize"}>{product.name}</h3>
+                          <p className="text-gray-500 text-sm font-light">
+                            Total Quantity: {totalQty}
+                          </p>
                         </div>
-                      </div>
-                    </Disclosure.Panel>
-                  </>
-                )}
-              </Disclosure>
-            );
-          })}
+                        <div className="flex items-center mr-1">
+                          <ChevronDownIcon
+                            className={`${
+                              open && "rotate-180"
+                            } basic-transition w-4 h-4 text-gray-500`}
+                          />
+                        </div>
+                      </Disclosure.Button>
+
+                      <Disclosure.Panel className={"p-3 rounded-b"}>
+                        <div className="flex flex-col">
+                          {product.productDetail.map(
+                            (details: ProductDetail) => {
+                              return (
+                                <div
+                                  className="grid grid-cols-3 gap-3 text-gray-500 text-sm"
+                                  key={details.id}
+                                >
+                                  <p className="text-sm">
+                                    {details.variant.name}
+                                  </p>
+                                  <span className="place-self-center font-light">
+                                    {details.qty} pcs
+                                  </span>
+                                  <span className={"justify-self-end"}>
+                                    Rp {details.price.toLocaleString("id")}
+                                  </span>
+                                </div>
+                              );
+                            }
+                          )}
+                          {product.productDetail.length === 0 && (
+                            <small>Product has no variants.</small>
+                          )}
+                          <div className="flex items-center mt-6 space-x-6 justify-between">
+                            <button
+                              className="text-red-600 ring-red-600 ring-1 basic-transition px-2 py-1 rounded-md shadow flex items-center justify-center hover:shadow-md"
+                              type={"button"}
+                              onClick={async () => {
+                                await deleteProduct(product.id);
+                              }}
+                            >
+                              <small>Delete</small>
+                              <TrashIcon className={"w-4 h-4 ml-2"} />
+                            </button>
+                            <Link href={`/product/${product.id}`}>
+                              <a
+                                className={
+                                  "basic-transition flex items-center max-w-max text-sm text-gray-700 border-b border-b-gray-700"
+                                }
+                              >
+                                <span>Edit</span>
+                                <ArrowRightIcon className="ml-1 w-3 h-3" />
+                              </a>
+                            </Link>
+                          </div>
+                        </div>
+                      </Disclosure.Panel>
+                    </>
+                  )}
+                </Disclosure>
+              );
+            })}
         </div>
+        {searchQuery === "" &&
+          (productSliceIndex === filteredProducts.length ? (
+            <ButtonSubmit
+              text={"Minify List"}
+              onClick={() => setProductSliceIndex(3)}
+            />
+          ) : (
+            <ButtonSubmit
+              text={"Show More"}
+              onClick={() => setProductSliceIndex(filteredProducts.length)}
+            />
+          ))}
       </section>
     </>
   );
