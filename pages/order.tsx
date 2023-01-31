@@ -8,16 +8,17 @@ import {
   Product as PrismaProduct,
   Variant as PrismaVariant,
 } from "@prisma/client";
-import { useForm, useWatch, Controller } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useProduct, useOrder } from "@hooks";
+import { useOrder, useProduct } from "@hooks";
 import produce from "immer";
 import { AlertStatus, useAlertStore } from "store/alert.store";
 import { TrashIcon } from "@heroicons/react/20/solid";
 import axios from "lib/axios";
 import ButtonSubmit from "components/button-submit";
 import { OrderList } from "../types/dto";
+import AutoComplete from "../components/auto-complete";
 
 type ProductDropdown = Omit<PrismaProduct, "updatedAt">;
 
@@ -39,12 +40,10 @@ const schema = z.object({
     if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
   }, z.date({ invalid_type_error: "Must be type of Date!" })),
   orderDetail: z.object({
-    qty: z
-      .number({ invalid_type_error: "Qty must be a positive number!" })
-      .positive(),
+    qty: z.number({ invalid_type_error: "Please add quantity!" }).positive(),
     variantId: z.string(),
     variantLabel: z.string(),
-    productId: z.string(),
+    productId: z.string({ required_error: "Please add product!" }),
     productLabel: z.string(),
   }),
 });
@@ -75,6 +74,7 @@ const Order: NextPage = () => {
     control,
     name: "date",
   });
+
   const selectedProductId = useWatch({
     control,
     name: "orderDetail.productId",
@@ -110,10 +110,10 @@ const Order: NextPage = () => {
       resetForm({
         date: new Date(),
         orderDetail: {
-          productId: products[0].productDetail[0].productId,
-          variantId: products[0].productDetail[0].variant.id,
-          productLabel: products[0].name,
-          variantLabel: products[0].productDetail[0].variant.name,
+          productId: undefined,
+          variantId: undefined,
+          productLabel: undefined,
+          variantLabel: undefined,
           qty: 1,
         },
       });
@@ -121,6 +121,14 @@ const Order: NextPage = () => {
   }, [products]);
 
   function handleAddProduct(data: OrderForm): void {
+    if (data.orderDetail.qty > availableQty) {
+      showAlert(
+        `${data.orderDetail.productLabel} quantity cannot be higher than ${availableQty}`,
+        AlertStatus.ERROR
+      );
+      return;
+    }
+
     const isDuplicate = orderDetail.some((item: OrderDetail) => {
       return (
         data.orderDetail.productId === item.productId &&
@@ -145,6 +153,7 @@ const Order: NextPage = () => {
       showAlert("Product cannot be empty", AlertStatus.ERROR);
       return;
     }
+
     setIsButtonLoading(true);
     try {
       await axios.post("/order", { date: getValues("date"), orderDetail });
@@ -199,7 +208,7 @@ const Order: NextPage = () => {
                 Add Products
               </button>
             </div>
-            <ListBox
+            <AutoComplete
               value={watch("orderDetail.productId")}
               options={products.map((product: ProductDropdown) => {
                 return {
@@ -208,10 +217,19 @@ const Order: NextPage = () => {
                 };
               })}
               onChange={({ value, label }) => {
-                setValue("orderDetail.productId", value);
-                setValue("orderDetail.productLabel", label);
+                setValue("orderDetail.productId", value, {
+                  shouldValidate: true,
+                });
+                setValue("orderDetail.productLabel", label, {
+                  shouldValidate: true,
+                });
               }}
             />
+            {errors.orderDetail?.productId && (
+              <small className="text-sm font-light text-amber-700">
+                {errors.orderDetail?.productId?.message}
+              </small>
+            )}
           </div>
           <div className={"grid grid-cols-2 gap-3"}>
             <div className={"space-y-1"}>
@@ -321,10 +339,12 @@ const Order: NextPage = () => {
           {orders.map((order: OrderList, index: number) => {
             return (
               <div className={"rounded shadow p-3"} key={index}>
-                  <small className={"font-light text-sm text-gray-500"}>{dayjs(order.createdAt).format('dddd DD/MM/YYYY')}</small>
-                  <h3 className={"text-gray-700"}>{order.productName}</h3>
+                <small className={"font-light text-sm text-gray-500"}>
+                  {dayjs(order.createdAt).format("dddd DD/MM/YYYY")}
+                </small>
+                <h3 className={"text-gray-700"}>{order.productName}</h3>
                 {order.orderQty}
-                </div>
+              </div>
             );
           })}
         </div>
