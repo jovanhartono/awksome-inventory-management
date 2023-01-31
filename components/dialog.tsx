@@ -62,9 +62,9 @@ export default function Dialog(dialogProps: DialogProps) {
                     <XMarkIcon className={"w-4 h-4 text-amber-700"} />
                   </button>
                 </HeadlessDialog.Title>
-                  <div className="px-5 overflow-y-scroll max-h-[75vh] pt-3 pb-5">
-                      {dialogProps.children}
-                  </div>
+                <div className="px-5 overflow-y-scroll max-h-[75vh] pt-3 pb-5">
+                  {dialogProps.children}
+                </div>
               </HeadlessDialog.Panel>
             </Transition.Child>
           </div>
