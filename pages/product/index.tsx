@@ -1,6 +1,8 @@
 import { GetStaticProps, NextPage } from "next";
-import { prisma } from "prisma/config";
 import Head from "next/head";
+import Link from "next/link";
+import { ChangeEvent, Fragment, useEffect, useState } from "react";
+import { prisma } from "prisma/config";
 import {
   ArrowRightIcon,
   ChevronDownIcon,
@@ -8,24 +10,20 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { ChangeEvent, Fragment, useEffect, useState } from "react";
-import Dialog from "components/dialog";
-import TextField from "components/text-field";
-import ListBox from "components/listBox";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import axios from "lib/axios";
-import { AxiosResponse } from "axios";
-import { Product, ProductDetail } from "types/prisma.types";
 import { Disclosure } from "@headlessui/react";
-import { ProductDTO } from "types/dto";
-import Link from "next/link";
-import ButtonSubmit from "components/button-submit";
-import { useLoaderStore } from "store/loader.store";
-import { AlertStatus, useAlertStore } from "store/alert.store";
+import { AxiosResponse } from "axios";
+import axios from "lib/axios";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { mutate } from "swr";
+
+import { AlertStatus, useAlertStore } from "store/alert.store";
+import { ButtonSubmit, Dialog, ListBox, TextField } from "@components";
 import { useFilter, useProduct, useVariant } from "@hooks";
+import { useLoaderStore } from "store/loader.store";
+import { ProductDTO } from "types/dto";
+import { Product, ProductDetail } from "types/prisma.types";
 
 const schema = z
   .object({
