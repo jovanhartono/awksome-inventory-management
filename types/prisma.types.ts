@@ -13,3 +13,15 @@ export type Product = {
   name: string;
   productDetail: ProductDetail[];
 };
+
+export interface OrderGroup {
+  createdAt: Date;
+  productName: string;
+  variant: string;
+  qty: number;
+}
+
+export interface OrderGroupByDate {
+  orderDate: string;
+  data: OrderGroup[];
+}
