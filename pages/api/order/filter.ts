@@ -13,9 +13,8 @@ export default async function handler(
   response: NextApiResponse
 ) {
   if (request.method === "GET") {
-    const { orderDateFrom, orderDateTo } = request.query;
-    const orderList: Array<OrderGroup> = await prisma.$queryRaw(
-      Prisma.sql`
+    const { orderDateFrom, orderDateTo, sort: sortDirection } = request.query;
+    const orderList: Array<OrderGroup> = await prisma.$queryRaw`
             SELECT DATE(CONVERT_TZ(o.createdAt, '+00:00', '+07:00')) as createdAt, p.name as productName, v.name as variant, COUNT(od.qty) as qty
             FROM \`Order\` o 
             JOIN OrderDetails od 
@@ -26,12 +25,14 @@ export default async function handler(
             ON p.id = pd.productId 
             JOIN Variant v 
             ON v.id = pd.variantId
-            WHERE createdAt BETWEEN ${orderDateFrom} AND ${orderDateTo}  
+            WHERE DATE(CONVERT_TZ(o.createdAt, '+00:00', '+07:00')) BETWEEN ${orderDateFrom} AND ${orderDateTo}  
             GROUP BY createdAt, p.name, v.name
-            ORDER BY createdAt DESC
-        `
-    );
-
+            ${
+              sortDirection === "ASC"
+                ? Prisma.sql`ORDER BY createdAt ASC`
+                : Prisma.sql`ORDER BY createdAt DESC`
+            }
+        `;
     const groupedData = orderList.reduce((acc, curr) => {
       const date = dayjs(curr.createdAt).format("YYYY-MM-DD");
       if (!acc[date]) {
