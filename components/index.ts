@@ -6,3 +6,5 @@ export { default as Loader } from "./feedback/loader";
 export { default as Layout } from "./layout";
 export { default as ListBox } from "./listBox";
 export { default as TextField } from "./text-field";
+export { default as DateRange } from "./date-range";
+export { default as ListSort } from "./list-sort";
