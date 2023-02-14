@@ -1,24 +1,30 @@
 import { NextPage } from "next";
 import Head from "next/head";
-import dayjs from "dayjs";
-import ListBox from "components/listBox";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import dayjs from "dayjs";
+import produce from "immer";
+import { useImmer } from "use-immer";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { TrashIcon } from "@heroicons/react/20/solid";
 import {
   Product as PrismaProduct,
   Variant as PrismaVariant,
 } from "@prisma/client";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useOrder, useProduct } from "@hooks";
-import produce from "immer";
-import { AlertStatus, useAlertStore } from "store/alert.store";
-import { TrashIcon } from "@heroicons/react/20/solid";
+import { CogIcon, PlusIcon } from "@heroicons/react/24/outline";
 import axios from "lib/axios";
-import ButtonSubmit from "components/button-submit";
-import { OrderList } from "../types/dto";
-import AutoComplete from "../components/auto-complete";
+
+import { useOrderFilter, useProduct } from "@hooks";
+import { AlertStatus, useAlertStore } from "store/alert.store";
+import { OrderGroupByDate } from "types/prisma.types";
+import {
+  AutoComplete,
+  ButtonSubmit,
+  DateRange,
+  ListBox,
+  ListSort,
+} from "@components";
 
 type ProductDropdown = Omit<PrismaProduct, "updatedAt">;
 
@@ -51,10 +57,22 @@ const schema = z.object({
 const Order: NextPage = () => {
   const { show: showAlert } = useAlertStore();
   const { products, isLoading: isProductLoading } = useProduct();
-  const { orders, isLoading: isOrderLoading } = useOrder();
 
   const [orderDetail, setOrderDetail] = useState<OrderDetail[]>([]);
   const [isButtonLoading, setIsButtonLoading] = useState<boolean>(false);
+  const [buttonActiveFilter, setButtonActiveFilter] = useState<string>("1W");
+  const [orderDateFilter, setOrderDateFilter] = useImmer({
+    orderDateFrom: dayjs().subtract(7, "d").format("YYYY-MM-DD"),
+    orderDateTo: dayjs().format("YYYY-MM-DD"),
+    sort: "DESC",
+  });
+  const {
+    orders,
+    isLoading: isOrderLoading,
+    mutate,
+  } = useOrderFilter({
+    ...orderDateFilter,
+  });
 
   const {
     register,
@@ -108,7 +126,7 @@ const Order: NextPage = () => {
   useEffect(() => {
     if (products.length > 0) {
       resetForm({
-        date: new Date(),
+        date: dayjs(dayjs().format("YYYY-MM-DD")).toDate(),
         orderDetail: {
           productId: undefined,
           variantId: undefined,
@@ -159,6 +177,7 @@ const Order: NextPage = () => {
       await axios.post("/order", { date: getValues("date"), orderDetail });
       setOrderDetail([]);
       showAlert("Successfully add order.");
+      await mutate();
     } catch (e) {
       showAlert("There is an error when adding order.", AlertStatus.ERROR);
     } finally {
@@ -166,8 +185,8 @@ const Order: NextPage = () => {
     }
   }
 
-  if (isProductLoading || isOrderLoading) {
-    return <p>Loading...</p>;
+  if (isProductLoading) {
+    return <></>;
   }
 
   return (
@@ -285,7 +304,7 @@ const Order: NextPage = () => {
                     return (
                       <th
                         key={index}
-                        className={"p-3 font-medium text-gray-700"}
+                        className={"p-3 font-medium text-gray-700 min-w-[55px]"}
                       >
                         {value}
                       </th>
@@ -334,19 +353,108 @@ const Order: NextPage = () => {
         />
       </section>
       <section className={"space-y-3 mt-6"}>
-        <h2>Order List</h2>
-        <div className="space-y-3">
-          {orders.map((order: OrderList, index: number) => {
-            return (
-              <div className={"rounded shadow p-3"} key={index}>
-                <small className={"font-light text-sm text-gray-500"}>
-                  {dayjs(order.createdAt).format("dddd DD/MM/YYYY")}
-                </small>
-                <h3 className={"text-gray-700"}>{order.productName}</h3>
-                {order.orderQty}
-              </div>
-            );
-          })}
+        <div className="flex justify-between items-center">
+          <h2>Recent Order</h2>
+          <div className="flex space-x-3">
+            <button
+              className={`${
+                buttonActiveFilter === "1W" && "bg-amber-100 text-amber-700"
+              } basic-transition hover:text-amber-700 hover:bg-amber-100 p-1.5 rounded text-sm`}
+              onClick={() => {
+                setOrderDateFilter((filter) => {
+                  filter.orderDateFrom = dayjs()
+                    .subtract(1, "w")
+                    .format("YYYY-MM-DD");
+                  filter.orderDateTo = dayjs().format("YYYY-MM-DD");
+                });
+                setButtonActiveFilter("1W");
+              }}
+            >
+              1W
+            </button>
+            <button
+              className={`${
+                buttonActiveFilter === "2W" && "bg-amber-100 text-amber-700"
+              } basic-transition hover:text-amber-700 hover:bg-amber-100 p-1.5 rounded text-sm`}
+              onClick={() => {
+                setOrderDateFilter((filter) => {
+                  filter.orderDateFrom = dayjs()
+                    .subtract(2, "w")
+                    .format("YYYY-MM-DD");
+                  filter.orderDateTo = dayjs().format("YYYY-MM-DD");
+                });
+                setButtonActiveFilter("2W");
+              }}
+            >
+              2W
+            </button>
+            <DateRange
+              active={buttonActiveFilter === "custom-date"}
+              onChange={(dateFrom, dateTo) => {
+                setOrderDateFilter((filter) => {
+                  filter.orderDateFrom = dateFrom;
+                  filter.orderDateTo = dateTo;
+                });
+                setButtonActiveFilter("custom-date");
+              }}
+            />
+          </div>
+        </div>
+        <div className={"flex justify-between items-center"}>
+          <p className={"text-sm text-gray-500"}>
+            {dayjs(orderDateFilter.orderDateFrom).format("D MMMM YYYY")} -{" "}
+            {dayjs(orderDateFilter.orderDateTo).format("D MMMM YYYY")}
+          </p>
+          <ListSort
+            sortDirection={orderDateFilter.sort}
+            onChange={(sortDir) => {
+              setOrderDateFilter((draft) => {
+                draft.sort = sortDir;
+              });
+            }}
+          />
+        </div>
+        <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-visible">
+          {isOrderLoading ? (
+            <div className="flex space-x-3 justify-center min-h-[24rem]">
+              <p className={"text-gray-900 text-base"}>Loading</p>
+              <CogIcon className={"w-4 h-4 text-amber-700 animate-spin"} />
+            </div>
+          ) : (
+            orders.map((order: OrderGroupByDate, index: number) => {
+              return (
+                <div className={"rounded shadow p-3"} key={index}>
+                  <p className={"text-sm text-gray-500 mb-2"}>
+                    {dayjs(order.orderDate).format("dddd, DD MMMM YYYY")}
+                  </p>
+                  {order.data.map((dataGroup, index: number) => {
+                    return (
+                      <div
+                        key={index}
+                        className={"grid grid-cols-3 items-center"}
+                      >
+                        <small className={"text-sm text-gray-700"}>
+                          {dataGroup.productName}
+                        </small>
+                        <small
+                          className={
+                            "text-sm text-gray-700 justify-self-center"
+                          }
+                        >
+                          {dataGroup.variant}
+                        </small>
+                        <small
+                          className={"text-sm text-gray-700 justify-self-end"}
+                        >
+                          {dataGroup.qty} pcs
+                        </small>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })
+          )}
         </div>
       </section>
     </>
