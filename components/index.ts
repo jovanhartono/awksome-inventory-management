@@ -8,3 +8,4 @@ export { default as ListBox } from "./listBox";
 export { default as TextField } from "./text-field";
 export { default as DateRange } from "./date-range";
 export { default as ListSort } from "./list-sort";
+export { default as CustomLineChart } from "./line-chart";
