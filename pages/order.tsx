@@ -46,7 +46,7 @@ const schema = z.object({
     if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
   }, z.date({ invalid_type_error: "Must be type of Date!" })),
   orderDetail: z.object({
-    qty: z.number({ invalid_type_error: "Please add quantity!" }).positive(),
+    qty: z.number({ invalid_type_error: "Quantity must be number!" }).positive(),
     variantId: z.string(),
     variantLabel: z.string(),
     productId: z.string({ required_error: "Please add product!" }),
@@ -414,7 +414,7 @@ const Order: NextPage = () => {
             }}
           />
         </div>
-        <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-visible">
+        <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-visible p-0.5">
           {isOrderLoading ? (
             <div className="flex space-x-3 justify-center min-h-[24rem]">
               <p className={"text-gray-900 text-base"}>Loading</p>
