@@ -4,8 +4,9 @@ import Head from "next/head";
 import Layout from "../components/layout";
 import { SWRConfig } from "swr";
 import axios from "lib/axios";
+import { SessionProvider } from "next-auth/react";
 
-function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <>
       <Head>
@@ -27,9 +28,11 @@ function MyApp({ Component, pageProps }: AppProps) {
             axios.get(resource, init).then((res) => res.data),
         }}
       >
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
+        <SessionProvider session={session}>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </SessionProvider>
       </SWRConfig>
     </>
   );
