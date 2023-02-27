@@ -55,3 +55,9 @@ model Variant {
   name  String
   model ProductDetail[]
 }
+
+model User {
+  id       String      @id @default(cuid())
+  username String      @unique
+  password String
+}
