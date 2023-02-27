@@ -17,7 +17,7 @@ const ButtonSubmit = ({ text, loading, className, onClick }: ButtonProps) => {
       {loading ? (
         <div className="flex items-center justify-center">
           <CogIcon className={"w-5 h-5 text-amber-700 mr-3 animate-spin"} />
-          Updating
+          Loading
         </div>
       ) : (
         text
