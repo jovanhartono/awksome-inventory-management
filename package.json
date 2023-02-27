@@ -20,6 +20,7 @@
     "immer": "^9.0.15",
     "nanoid": "^3.3.4",
     "next": "12.2.5",
+    "next-auth": "^4.19.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.36.1",
