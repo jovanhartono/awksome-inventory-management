@@ -8,9 +8,10 @@ import { CustomLineChart } from "@components";
 import { useOrderFilter } from "@hooks";
 import { useLoaderStore } from "../store/loader.store";
 import buttonFilter from "../const/buttonFilter";
+import { useSession } from "next-auth/react";
 
 const Home: NextPage = () => {
-  const [buttonActiveFilter, setButtonActiveFilter] = useState<string>("1W");
+  const [buttonActiveFilter, setButtonActiveFilter] = useState<string>("1Y");
   const { show: showLoader, hide: hideLoader } = useLoaderStore();
   const [orderDateFilter, setOrderDateFilter] = useImmer({
     orderDateFrom: dayjs().subtract(1, "y").format("YYYY-MM-DD"),
@@ -18,10 +19,11 @@ const Home: NextPage = () => {
     sort: "ASC",
   });
   const { orders, isLoading } = useOrderFilter({ ...orderDateFilter });
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    isLoading ? showLoader() : hideLoader();
-  }, [isLoading]);
+    isLoading || status === "loading" ? showLoader() : hideLoader();
+  }, [isLoading, status]);
 
   const lineChartData = useMemo(() => {
     return orders.map((order) => ({
@@ -40,6 +42,7 @@ const Home: NextPage = () => {
       </Head>
       <div>
         <section className={"space-y-3"}>
+          <h2>Hello, {session?.user?.name}</h2>
           <div className="space-y-1">
             <h2>Order Summary</h2>
             <p className={"text-sm text-gray-500"}>
