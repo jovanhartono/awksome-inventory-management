@@ -2,6 +2,8 @@ import Image from "next/image";
 import Logo from "../../public/logo.webp";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { ArrowLeftOnRectangleIcon } from "@heroicons/react/24/outline";
+import { signOut } from "next-auth/react";
 
 export default function Header() {
   const router = useRouter();
@@ -21,6 +23,10 @@ export default function Header() {
     },
   ];
 
+  async function logout() {
+    await signOut();
+  }
+
   return (
     <header className={"lg:p-6 border-b border-b-gray-100 space-y-4"}>
       <div className="flex justify-between items-center px-6 pt-6">
@@ -35,7 +41,7 @@ export default function Header() {
           />
         </div>
       </div>
-      <div className="flex space-x-4 px-6">
+      <div className="flex gap-4 px-6 items-center">
         {menu.map((route: { label: string; path: string }, idx: number) => {
           return (
             <Link href={route.path} key={idx}>
@@ -52,6 +58,15 @@ export default function Header() {
             </Link>
           );
         })}
+        <button
+          className={
+            "ml-auto pb-3 px-1 flex items-center text-gray-700 text-sm font-light"
+          }
+          onClick={logout}
+        >
+          Logout
+          <ArrowLeftOnRectangleIcon className={"w-5 h-5 text-amber-700 ml-1"} />
+        </button>
       </div>
     </header>
   );
