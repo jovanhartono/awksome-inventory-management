@@ -38,11 +38,19 @@ export default async function handler(
       response.status(409).send("Identifier conflict when creating product.");
     }
   } else if (request.method === "GET") {
+    const { isOutOfStock = false } = request.query;
     const products = await prisma.product.findMany({
       where: {
         productDetail: {
           some: {
             isDeleted: false,
+            ...(isOutOfStock
+              ? {
+                  qty: {
+                    lte: 0,
+                  },
+                }
+              : {}),
           },
         },
       },
@@ -52,6 +60,13 @@ export default async function handler(
         productDetail: {
           where: {
             isDeleted: false,
+            ...(isOutOfStock
+              ? {
+                  qty: {
+                    lte: 0,
+                  },
+                }
+              : {}),
           },
           include: {
             variant: true,

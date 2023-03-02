@@ -5,10 +5,11 @@ import dayjs from "dayjs";
 import { useImmer } from "use-immer";
 
 import { CustomLineChart } from "@components";
-import { useOrderFilter } from "@hooks";
+import { useOrderFilter, useProduct } from "@hooks";
 import { useLoaderStore } from "../store/loader.store";
 import buttonFilter from "../const/buttonFilter";
 import { useSession } from "next-auth/react";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 const Home: NextPage = () => {
   const [buttonActiveFilter, setButtonActiveFilter] = useState<string>("1Y");
@@ -20,6 +21,7 @@ const Home: NextPage = () => {
   });
   const { orders, isLoading } = useOrderFilter({ ...orderDateFilter });
   const { data: session, status } = useSession();
+  const { products } = useProduct({ isOutOfStock: true });
 
   useEffect(() => {
     isLoading || status === "loading" ? showLoader() : hideLoader();
@@ -70,6 +72,25 @@ const Home: NextPage = () => {
               </button>
             ))}
           </div>
+          {products.length > 0 && (
+            <div className="p-3 bg-amber-50 rounded">
+              <div className="flex items-center mb-1">
+                <h3 className={"text-amber-700 mr-2"}>Out of Stock</h3>
+                <ExclamationTriangleIcon className={"w-5 h-5 text-red-700"} />
+              </div>
+              <div className="grid grid-cols-2">
+                {products.map((product, firstIndex: number) => {
+                  return product.productDetail.map(
+                    (detail, secondIndex: number) => (
+                      <p key={`${firstIndex}, ${secondIndex}`}>
+                        {product.name} - {detail.variant.name}
+                      </p>
+                    )
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </>
