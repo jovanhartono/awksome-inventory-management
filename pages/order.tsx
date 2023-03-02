@@ -12,7 +12,7 @@ import {
   Variant as PrismaVariant,
 } from "@prisma/client";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { CogIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, CogIcon, PlusIcon } from "@heroicons/react/24/outline";
 import axios from "lib/axios";
 
 import { useOrderFilter, useProduct } from "@hooks";
@@ -25,6 +25,7 @@ import {
   ListBox,
   ListSort,
 } from "@components";
+import Link from "next/link";
 
 type ProductDropdown = Omit<PrismaProduct, "updatedAt">;
 
@@ -46,7 +47,9 @@ const schema = z.object({
     if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
   }, z.date({ invalid_type_error: "Must be type of Date!" })),
   orderDetail: z.object({
-    qty: z.number({ invalid_type_error: "Quantity must be number!" }).positive(),
+    qty: z
+      .number({ invalid_type_error: "Quantity must be number!" })
+      .positive(),
     variantId: z.string(),
     variantLabel: z.string(),
     productId: z.string({ required_error: "Please add product!" }),
@@ -451,6 +454,16 @@ const Order: NextPage = () => {
                       </div>
                     );
                   })}
+                  <Link href={`/order/${order.orderDate}`}>
+                    <a
+                      className={
+                        "ml-auto mt-3 basic-transition justify-end flex items-center max-w-max text-sm text-gray-700 border-b border-b-gray-700"
+                      }
+                    >
+                      <span>Details</span>
+                      <ArrowRightIcon className="ml-1 w-3 h-3" />
+                    </a>
+                  </Link>
                 </div>
               );
             })
