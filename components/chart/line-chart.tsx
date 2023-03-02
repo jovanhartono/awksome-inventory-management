@@ -34,7 +34,7 @@ export default function CustomLineChart({ data }: CustomLineChartProps) {
         >
           <CartesianGrid vertical={false} opacity={0.3} />
           <YAxis
-            width={30}
+            width={35}
             axisLine={false}
             tickLine={false}
             tickMargin={10}
