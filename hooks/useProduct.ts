@@ -9,8 +9,15 @@ type UseProduct = {
   isError: boolean;
 };
 
-export function useProduct(): UseProduct {
-  const { data, error } = useSWR("/product");
+export function useProduct(filter?: { [key: string]: any }): UseProduct {
+  const { data, error } = useSWR([
+    "/product",
+    {
+      params: {
+        ...filter,
+      },
+    },
+  ]);
   const { show, hide } = useLoaderStore();
 
   const [loading, setLoading] = useState<boolean>(false);

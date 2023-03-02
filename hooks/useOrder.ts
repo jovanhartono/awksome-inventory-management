@@ -9,8 +9,15 @@ type UseOrder = {
   isError: boolean;
 };
 
-export function useOrder(): UseOrder {
-  const { data, error } = useSWR<OrderGroupByDate[]>("/order");
+export function useOrder(filter?: { [key: string]: string }): UseOrder {
+  const { data, error } = useSWR<OrderGroupByDate[]>([
+    "/order",
+    {
+      params: {
+        ...filter,
+      },
+    },
+  ]);
   const { show, hide } = useLoaderStore();
 
   const [loading, setLoading] = useState<boolean>(false);
