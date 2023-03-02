@@ -13,9 +13,13 @@ export default async function handler(
   response: NextApiResponse
 ) {
   if (request.method === "GET") {
-    const { orderDateFrom, orderDateTo, sort: sortDirection = 'DESC' } = request.query;
+    const {
+      orderDateFrom,
+      orderDateTo,
+      sort: sortDirection = "DESC",
+    } = request.query;
     const orderList: Array<OrderGroup> = await prisma.$queryRaw`
-            SELECT DATE(CONVERT_TZ(o.createdAt, '+00:00', '+07:00')) as createdAt, p.name as productName, v.name as variant, COUNT(od.qty) as qty
+            SELECT DATE(CONVERT_TZ(o.createdAt, '+00:00', '+07:00')) as createdAt, p.name as productName, v.name as variant, SUM(od.qty) as qty
             FROM \`Order\` o 
             JOIN OrderDetails od 
             ON od.orderId = o.id 
