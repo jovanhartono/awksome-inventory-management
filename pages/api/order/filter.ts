@@ -29,7 +29,8 @@ export default async function handler(
             ON p.id = pd.productId 
             JOIN Variant v 
             ON v.id = pd.variantId
-            WHERE DATE(CONVERT_TZ(o.createdAt, '+00:00', '+07:00')) BETWEEN ${orderDateFrom} AND ${orderDateTo}  
+            WHERE DATE(CONVERT_TZ(o.createdAt, '+00:00', '+07:00')) BETWEEN ${orderDateFrom} AND ${orderDateTo}
+            AND o.isDeleted = false
             GROUP BY createdAt, p.name, v.name
             ${
               sortDirection === "ASC"

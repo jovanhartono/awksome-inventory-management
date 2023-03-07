@@ -13,6 +13,7 @@ export default async function handler(
         createdAt: {
           equals: dayjs(orderDate).toDate(),
         },
+        isDeleted: false,
       },
       include: {
         detail: {
@@ -31,12 +32,12 @@ export default async function handler(
 
     const convertedOrder = orderByDate.map((order) => {
       return {
-          id: order.id,
-          orderDetails: order.detail.map((orderDetail) => ({
-              productName: orderDetail.productDetails.product.name,
-              variantName: orderDetail.productDetails.variant.name,
-              qty: orderDetail.qty,
-          }))
+        id: order.id,
+        orderDetails: order.detail.map((orderDetail) => ({
+          productName: orderDetail.productDetails.product.name,
+          variantName: orderDetail.productDetails.variant.name,
+          qty: orderDetail.qty,
+        })),
       };
     });
     return response.status(200).json(convertedOrder);
