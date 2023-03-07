@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { useEffect } from "react";
 import Head from "next/head";
 import dayjs from "dayjs";
-import { useLoaderStore } from "../../store/loader.store";
+import { useLoaderStore, useAlertStore, AlertStatus } from "@store";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import axios from "../../lib/axios";
 
@@ -19,10 +19,11 @@ interface OrderDetailsByDate {
 export default function OrderDetails() {
   const { query } = useRouter();
   const { orderDate } = query as { orderDate: string };
-  const { data } = useSWR<Array<OrderDetailsByDate>>(
+  const { data, mutate } = useSWR<Array<OrderDetailsByDate>>(
     orderDate ? `/order/${orderDate}` : null
   );
   const { show: showLoader, hide: hideLoader } = useLoaderStore();
+  const { show: showAlert } = useAlertStore();
 
   useEffect(() => {
     if (!data) {
@@ -33,16 +34,16 @@ export default function OrderDetails() {
   }, [data]);
 
   async function deleteOrder(id: string): Promise<void> {
-      showLoader();
-      try {
-        await axios.delete(`/order/delete/${id}`);
-      }
-      catch (e) {
-
-      }
-      finally {
-          hideLoader();
-      }
+    showLoader();
+    try {
+      await axios.delete(`/order/delete/${id}`);
+      await mutate();
+      showAlert("Delete order success");
+    } catch (e) {
+      showAlert("There is an error when deleting order", AlertStatus.ERROR);
+    } finally {
+      hideLoader();
+    }
   }
 
   if (!data) {
