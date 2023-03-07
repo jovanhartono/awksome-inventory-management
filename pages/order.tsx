@@ -16,7 +16,6 @@ import { ArrowRightIcon, CogIcon, PlusIcon } from "@heroicons/react/24/outline";
 import axios from "lib/axios";
 
 import { useOrderFilter, useProduct } from "@hooks";
-import { AlertStatus, useAlertStore } from "store/alert.store";
 import { OrderGroupByDate } from "types/prisma.types";
 import {
   AutoComplete,
@@ -26,6 +25,7 @@ import {
   ListSort,
 } from "@components";
 import Link from "next/link";
+import { useAlertStore, AlertStatus } from "@store";
 
 type ProductDropdown = Omit<PrismaProduct, "updatedAt">;
 

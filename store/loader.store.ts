@@ -7,7 +7,7 @@ type LoaderStore = {
   show: () => void;
 };
 
-export const useLoaderStore = create<LoaderStore>((set) => ({
+const useLoaderStore = create<LoaderStore>((set) => ({
   visible: false,
   hide: () =>
     set(
@@ -26,3 +26,5 @@ export const useLoaderStore = create<LoaderStore>((set) => ({
       })
     ),
 }));
+
+export default useLoaderStore;

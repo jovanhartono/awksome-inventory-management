@@ -2,7 +2,7 @@ import { ButtonSubmit, Dialog } from "@components";
 import { ChangeEvent, useState } from "react";
 import { FunnelIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import { AlertStatus, useAlertStore } from "../store/alert.store";
+import { useAlertStore, AlertStatus } from "@store";
 
 interface DateRangeProps {
   active: boolean;

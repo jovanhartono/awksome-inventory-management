@@ -5,7 +5,8 @@
     "paths": {
       "@hooks": ["hooks"],
       "@hooks/*": ["hooks/*"],
-      "@components": ["components"]
+      "@components": ["components"],
+      "@store": ["store"],
     },
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,

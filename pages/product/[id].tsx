@@ -13,9 +13,9 @@ import { ProductDTO } from "../../types/dto";
 import { Product } from "../../types/prisma.types";
 import { AxiosError, AxiosResponse } from "axios";
 import ButtonSubmit from "../../components/button-submit";
-import { AlertStatus, useAlertStore } from "../../store/alert.store";
 import { useVariant } from "@hooks";
 import useSWR from "swr";
+import { useAlertStore, AlertStatus } from "@store";
 
 const schema = z
   .object({

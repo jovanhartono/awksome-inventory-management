@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import { Product } from "../types/prisma.types";
-import { useLoaderStore } from "../store/loader.store";
 import { useEffect, useState } from "react";
+import { useLoaderStore } from "@store";
 
 type UseProduct = {
   products: Array<Product>;

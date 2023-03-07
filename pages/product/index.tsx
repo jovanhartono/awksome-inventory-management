@@ -18,12 +18,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { mutate } from "swr";
 
-import { AlertStatus, useAlertStore } from "store/alert.store";
 import { ButtonSubmit, Dialog, ListBox, TextField } from "@components";
 import { useFilter, useProduct, useVariant } from "@hooks";
-import { useLoaderStore } from "store/loader.store";
 import { ProductDTO } from "types/dto";
 import { Product, ProductDetail } from "types/prisma.types";
+import { useLoaderStore, useAlertStore, AlertStatus } from "@store";
 
 const schema = z
   .object({

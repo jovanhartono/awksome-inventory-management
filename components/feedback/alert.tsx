@@ -1,7 +1,7 @@
-import { AlertStatus, useAlertStore } from "../../store/alert.store";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Transition } from "@headlessui/react";
 import { Fragment } from "react";
+import { useAlertStore, AlertStatus } from "@store";
 
 export default function Alert() {
   const {

@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react";
 import { ButtonSubmit } from "@components";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { AlertStatus, useAlertStore } from "../store/alert.store";
+import { useAlertStore, AlertStatus } from "@store";
 
 const schema = z.object({
   username: z.string(),

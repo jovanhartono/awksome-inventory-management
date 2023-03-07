@@ -18,7 +18,7 @@ type AlertStore = {
   hide: () => void;
 };
 
-export const useAlertStore = create<AlertStore>((set) => ({
+const useAlertStore = create<AlertStore>((set) => ({
   alertState: {
     visible: false,
     message: "Default fallback alert message",
@@ -39,3 +39,5 @@ export const useAlertStore = create<AlertStore>((set) => ({
   hide: () =>
     set(produce((state: AlertStore) => void(state.alertState.visible = false))),
 }));
+
+export default useAlertStore;
