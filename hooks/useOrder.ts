@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { useLoaderStore } from "store/loader.store";
+import { useLoaderStore } from "@store";
 import { useEffect, useState } from "react";
 import { OrderGroupByDate } from "types/prisma.types";
 
